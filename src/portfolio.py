@@ -1,5 +1,14 @@
 import deal
 
+"""
+Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
+
+- data from curvo.eu/backtest/
+- most "neutral" portfolio possible. dilutes US exposure slightly.
+- must invest at least 10 years
+- 
+"""
+
 
 @deal.pure
 @deal.pre(lambda months, **_: 0 <= months <= 1200)
