@@ -6,9 +6,8 @@ import deal
 import polars as pl
 
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
-
-
 ANNUAL_INFLATION = 1.0254
+TER_VANGUARD = 0.19 # Total Expense Ratio (TER), used to be 0.22% before Oct 2025
 
 
 @dataclass
@@ -31,15 +30,10 @@ def simulate_portfolio(
     real: bool = False,
 ) -> PortfolioResult:
     """
-    Product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
-    Equity ETF that tracks the entire world stock market.
-
-    Key Considerations:
+    Cost Basis:
         - KESt (Kapitalertragssteuer): 27.5% on capital gains
         - AgE (Ausschüttungsgleiche Erträge): on dividends they *would* have distributed.
-        This tax is deducted from the investor's cash account (not the fund value directly),
-        creating a "tax drag" on liquidity. To prevent double taxation, the acquisition cost (basis)
-        is stepped up by the specific amount of the AgE.
+          In practice this is computed by the broker (e.g. Flatex).
 
     Args:
         monthly_savings: Amount saved and invested at the *end* of each month.
