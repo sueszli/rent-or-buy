@@ -8,7 +8,7 @@ import polars as pl
 Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
 
 - data from curvo.eu/backtest/
-- most "neutral" portfolio possible. dilutes US exposure slightly.
+- most "neutral" portfolio possible. dilutes US exposure.
 - must invest at least 10 years
 """
 
