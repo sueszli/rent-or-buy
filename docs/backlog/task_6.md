@@ -47,3 +47,7 @@ $$V(T) = \text{price} \cdot (1 + g_a)^T$$
 - [ ] Unit test: `property_value(10, 500000, 0.02)` == `500000 * 1.02^10`
 - [ ] Unit test: `surplus(t) < 0` raises constraint error
 - [ ] Edge case: `surplus(t) == 0` — portfolio only grows from returns, no new contributions
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

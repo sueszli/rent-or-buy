@@ -34,3 +34,7 @@ where $O_0$ includes Betriebskosten, Rücklage, Grundsteuer, insurance, and main
 - [ ] Unit test: `ownership_costs_monthly(12, 600, 0.025)` == `600 * 1.025`
 - [ ] Unit test: `ownership_costs_monthly(60, 600, 0.025)` == `600 * 1.025^5`
 - [ ] Sanity check: for a €500k/80m² apartment, verify estimated $O_0$ is in the range €400–€800/mo (cross-reference with Vienna Hausverwaltung data)
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

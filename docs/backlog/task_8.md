@@ -54,3 +54,7 @@ Verify inside the simulation:
 - [ ] Verify renter invests `C_0` at t=0, buyer invests `0` at t=0
 - [ ] Verify buyer's mortgage balance reaches 0 at or before year N
 - [ ] Output structure contains all four items from §8 (NW curves, ΔNW, breakeven, sensitivity data placeholder)
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

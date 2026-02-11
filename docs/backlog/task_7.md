@@ -46,3 +46,7 @@ $$NW_{\text{buy}}(T) = V(T) + P_b(T) - 0.275 \cdot \max\!\left(0,\; P_b(T) - \Si
 - [ ] Unit test: buyer with `V=600000`, `P_b=100000`, `Σ_b=80000`, `M=200000` → NW = `600000 + 100000 - 0.275*20000 - 200000 = 494500`
 - [ ] Unit test: breakeven detection — supply two curves where buy overtakes rent at year 15, verify `breakeven_year == 15`
 - [ ] Edge case: buy never overtakes rent → returns `None`
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

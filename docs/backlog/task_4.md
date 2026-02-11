@@ -42,3 +42,7 @@ $$M(t) = M(t-1) - (\text{pmt} - \text{interest}(t))$$
 - [ ] Unit test: sum of all interest payments == total paid - principal
 - [ ] Unit test: `interest(0) = M(0) * rate/12`
 - [ ] Edge case: rate == 0 → `pmt = principal / (years * 12)`
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

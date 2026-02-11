@@ -30,3 +30,7 @@ Generate the four outputs specified by the methodology.
 - [ ] Visual: verify curves are labelled (rent vs buy) and axes are labelled (year, €)
 - [ ] Verify breakeven annotation on plot matches computed value
 - [ ] Verify terminal ΔNW printed value matches plot endpoint difference
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

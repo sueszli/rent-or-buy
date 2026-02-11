@@ -44,3 +44,7 @@ $$M(0) = \text{price} - \text{down}$$
 - [ ] Unit test: verify `C_0 - upfront_costs == down_payment` (accounting identity)
 - [ ] Edge case: cash exactly covers minimum down + costs → mortgage == 80% of price
 - [ ] Edge case: insufficient cash → raises error
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.
