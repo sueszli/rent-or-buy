@@ -1,3 +1,5 @@
+implement portfolio to read world etf
+
 move from inline dependencies to uv venv .venv
 
 update makefile
