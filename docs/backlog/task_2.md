@@ -41,3 +41,7 @@ $$\Sigma_r(t) = \Sigma_r(t-1) + \left[\text{savings}(t) - \text{rent}(t)\right]$
 - [ ] Unit test: `rent_monthly(12, 800, 0.03)` == `800 * 1.03`
 - [ ] Unit test: run 12 months with `C_0=100000`, `savings=3000/mo`, `rent=800/mo`, `r=0.07`. Verify `P_r(12)` and `Σ_r(12)` match hand calculation.
 - [ ] Edge case: `savings(t) < rent(t)` — portfolio should still decrease but remain tracked correctly
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.

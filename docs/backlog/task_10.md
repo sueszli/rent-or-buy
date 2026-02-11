@@ -39,3 +39,7 @@ Identify which parameter the answer is **most sensitive to** (largest swing in Î
 - [ ] Sanity check: higher `g_a` should favour buying (larger property value)
 - [ ] Sanity check: higher mortgage rate should favour renting (more interest paid)
 - [ ] Sanity check: higher `g_r` should favour buying (rent becomes more expensive)
+
+## Quality
+
+Make sure to follow the `CONTRIBUTING.md` file for code style.
