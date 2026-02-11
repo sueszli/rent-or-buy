@@ -20,3 +20,9 @@ Pre commit:
 ```bash
 make precommit
 ```
+
+Running code:
+
+```bash
+uv run src/main.py
+```
