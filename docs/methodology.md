@@ -1,148 +1,219 @@
-# Rent-and-Invest vs Buy-to-Live
+# Methodology: Rent-and-Invest vs Buy-to-Live
 
-## Goal
+## 1. The Question
 
-Compare terminal net worth of two strategies over a fixed horizon T (e.g. 30 years) for a salaried worker in Vienna. The question: _at year T, which strategy leaves you richer?_
+A salaried worker in Vienna has some starting cash and a stable income. They need a place to live. They have two options:
 
-```
-NW(T) = liquid_assets(T) + illiquid_assets(T) − liabilities(T)
-```
+- **Rent** an apartment and invest all surplus income into a global equity index fund.
+- **Buy** an apartment with a mortgage and invest any remaining surplus into the same fund.
 
-Secondary output: breakeven year and sensitivity ranges.
+**Which strategy produces higher net worth after $T$ years?**
 
----
+This is a capital allocation problem. The same income stream flows through two different pipelines. We simulate both month by month, track every euro, and compare terminal net worth.
 
-## Method
+## 2. Why This Is Not Obvious
 
-Month-by-month simulation. Both strategies share the same income stream and cost-of-living. The only difference is how the housing-related cash flow is structured. Any surplus is invested identically.
+The naive intuition — "buying builds equity, renting is throwing money away" — ignores three things:
 
-### Shared cash flow
+1. **Opportunity cost of the down payment.** The buyer locks ~20% of the purchase price + ~12.5% closing costs into an illiquid asset at $t = 0$. The renter invests that same cash into the market immediately.
+2. **Ownership is not free.** Beyond the mortgage, the buyer pays maintenance, operating costs, insurance, property tax — costs the renter doesn't have.
+3. **Leverage cuts both ways.** The mortgage amplifies property gains but also amplifies losses relative to the buyer's equity.
 
-```
-gross(t)    = gross_0 × (1 + wage_growth)^t          # nominal wage growth
-net(t)      = austrian_tax(gross(t))                  # 14-salary system, progressive brackets
-col(t)      = col_0 × (1 + inflation)^t              # cost of living excl. housing
-savings(t)  = net(t) − col(t)                         # disposable income for housing + investing
-```
+The answer depends on the spread between investment returns, property appreciation, rent growth, and mortgage rates. The simulation resolves this numerically.
 
-### Strategy A — Rent-and-Invest
+## 3. Metric
 
-Each month:
-```
-rent(t)       = rent_0 × (1 + rent_growth)^t
-investable(t) = savings(t) − rent(t)
-portfolio(t)  = portfolio(t−1) × (1 + r_monthly) + investable(t)
-```
+We compare **terminal net worth** — the total value of everything you own minus everything you owe at year $T$:
 
-Terminal net worth:
-```
-NW_rent(T) = portfolio(T) − KESt(T)
-KESt(T)    = 0.275 × max(0, portfolio(T) − Σ contributions)
-```
+$$NW(T) = \text{liquid assets}(T) + \text{property equity}(T) - \text{debt}(T)$$
 
-### Strategy B — Buy-to-Live
+For the renter, this is just the investment portfolio (after tax on gains). For the buyer, this is the property value plus any surplus portfolio, minus remaining mortgage and tax on portfolio gains.
 
-At t=0, deploy cash savings as down payment + upfront costs. Each month:
-```
-housing(t)    = mortgage_payment + own_costs(t)       # fixed annuity + inflation-adjusted maintenance
-investable(t) = max(0, savings(t) − housing(t))
-portfolio(t)  = portfolio(t−1) × (1 + r_monthly) + investable(t)
-```
+**Secondary metric:** the **breakeven year** — the first $T$ at which $NW_{\text{buy}}(T) > NW_{\text{rent}}(T)$. If no crossover occurs within the horizon, renting wins outright.
 
-Terminal net worth:
-```
-NW_buy(T) = property(T) + portfolio(T) − KESt(T) − mortgage_balance(T)
-property(T) = price_0 × (1 + appreciation)^T
-```
+## 4. Simulation Structure
+
+Deterministic, month-by-month forward simulation. Both strategies share the same income and expense model. The only difference is how housing is paid for and where surplus cash goes.
+
+No Monte Carlo. We use fixed growth rates and handle uncertainty through sensitivity analysis over key parameters.
 
 ---
 
-## Parameters and assumptions
+### 4.1 Shared: Income and Expenses
+
+Every month $t \in [0, 12T)$:
+
+$$\text{gross}(t) = \text{gross}_0 \cdot (1 + g_w)^{t/12}$$
+
+where $g_w$ is nominal annual wage growth.
+
+$$\text{net}(t) = f_{\text{tax}}(\text{gross}(t))$$
+
+where $f_{\text{tax}}$ is the Austrian income tax function (progressive brackets, 14-salary system with special treatment of 13th/14th payments).
+
+$$\text{expenses}(t) = E_0 \cdot (1 + \pi)^{t/12}$$
+
+where $E_0$ is baseline monthly non-housing expenses and $\pi$ is annual inflation.
+
+$$\text{savings}(t) = \text{net}(t) - \text{expenses}(t)$$
+
+This is the disposable income available for housing and investing each month. It is identical for both strategies.
+
+---
+
+### 4.2 Strategy A: Rent-and-Invest
+
+**Initial condition.** The renter does not need a down payment. Their entire starting cash $C_0$ is invested into the index fund at $t = 0$:
+
+$$P_r(0) = C_0$$
+
+**Each month:**
+
+$$\text{rent}(t) = R_0 \cdot (1 + g_r)^{t/12}$$
+
+where $R_0$ is starting monthly rent and $g_r$ is annual rent growth.
+
+The renter pays rent and invests everything left over:
+
+$$P_r(t) = P_r(t-1) \cdot \left(1 + \frac{r}{12}\right) + \left[\text{savings}(t) - \text{rent}(t)\right]$$
+
+where $r$ is annual nominal investment return (net of fund TER).
+
+Track cumulative contributions for tax purposes:
+
+$$\Sigma_r(t) = \Sigma_r(t-1) + \left[\text{savings}(t) - \text{rent}(t)\right]$$
+
+with $\Sigma_r(0) = C_0$.
+
+**Terminal net worth** (after capital gains tax):
+
+$$NW_{\text{rent}}(T) = P_r(T) - 0.275 \cdot \max\!\left(0,\; P_r(T) - \Sigma_r(T)\right)$$
+
+The 27.5% is Austrian KESt (flat capital gains tax), applied to the difference between portfolio value and total contributions (= realized gain at liquidation).
+
+---
+
+### 4.3 Strategy B: Buy-to-Live
+
+**Initial condition.** The buyer uses their starting cash for the down payment and closing costs. Nothing left to invest:
+
+$$\text{down} = C_0 - \text{upfront\_costs}(\text{price}, M_0)$$
+
+$$M(0) = \text{price} - \text{down}$$
+
+$$P_b(0) = 0$$
+
+where $M(0)$ is the initial mortgage balance and upfront costs include Grunderwerbsteuer, notary, agent, land registry, bank fees, and mortgage registration.
+
+**Each month — mortgage:**
+
+The mortgage payment is a fixed annuity over the loan term $N$:
+
+$$\text{pmt} = M(0) \cdot \frac{i(1+i)^{12N}}{(1+i)^{12N} - 1}$$
+
+where $i = \text{rate}/12$ is the monthly interest rate.
+
+Each month, interest accrues and principal is paid down:
+
+$$\text{interest}(t) = M(t-1) \cdot i$$
+
+$$M(t) = M(t-1) - (\text{pmt} - \text{interest}(t))$$
+
+**Each month — ownership costs:**
+
+$$\text{own}(t) = O_0 \cdot (1 + \pi)^{t/12}$$
+
+where $O_0$ includes Betriebskosten, Rücklage, Grundsteuer, insurance, and maintenance. These grow with inflation.
+
+**Each month — surplus investing:**
+
+$$\text{surplus}(t) = \text{savings}(t) - \text{pmt} - \text{own}(t)$$
+
+$$P_b(t) = P_b(t-1) \cdot \left(1 + \frac{r}{12}\right) + \max(0,\;\text{surplus}(t))$$
+
+Note: if $\text{surplus}(t) < 0$, the buyer cannot afford the house on their income. This is a constraint violation, not a modeled scenario.
+
+Track contributions:
+
+$$\Sigma_b(t) = \Sigma_b(t-1) + \max(0,\;\text{surplus}(t))$$
+
+**Property appreciation:**
+
+$$V(T) = \text{price} \cdot (1 + g_a)^T$$
+
+where $g_a$ is annual nominal property appreciation.
+
+**Terminal net worth:**
+
+$$NW_{\text{buy}}(T) = V(T) + P_b(T) - 0.275 \cdot \max\!\left(0,\; P_b(T) - \Sigma_b(T)\right) - M(T)$$
+
+Note: there is no capital gains tax on the primary residence in Austria (no Immobilienertragsteuer for Hauptwohnsitz held > 2 years).
+
+## 5. Investment Benchmark
+
+Both strategies invest surplus cash into the same vehicle: a **global equity index fund tracking the MSCI World Net Total Return Index** via an accumulating UCITS ETF (e.g. iShares Core MSCI World, TER ~0.20%).
+
+Why this benchmark:
+- It is the default "set and forget" portfolio recommended by virtually all passive investing guides.
+- It is globally diversified across ~1500 large/mid-cap stocks in 23 developed markets.
+- It has a continuous track record since 1969 (gross) / 1978 (net total return).
+- Backtestable via MSCI factsheets, curvo.eu, or justETF.
+
+We use the **Net Total Return** variant (dividends reinvested after withholding tax) because it reflects what an accumulating ETF actually delivers before domestic tax.
+
+The simulation uses a **fixed annual CAGR** $r$ for the return. This is a simplification — real returns are volatile — but sensitivity analysis across a range of $r$ values captures the uncertainty without the complexity of stochastic modeling.
+
+Historical reference for calibrating $r$: MSCI World NTR EUR, 1978–2024, annualized ≈ 9–10%. After subtracting ~0.2% TER and adjusting for the Austrian Vorabpauschale (deemed distribution tax on accumulating ETFs, minor impact), a reasonable base case is $r \approx 7\%$ nominal.
+
+## 6. Fairness Constraints
+
+The comparison is only valid if these conditions hold:
+
+1. **Same starting cash.** Both strategies begin with the same $C_0$. The buyer uses it for the down payment; the renter invests it.
+2. **Same income stream.** Same gross salary, same wage growth, same tax treatment.
+3. **Same non-housing expenses.** Cost of living excluding housing is identical.
+4. **Same investment vehicle.** Any surplus beyond housing costs is invested into the same fund at the same return.
+5. **Comparable housing.** The rented apartment and the purchased apartment are equivalent in size, location, and quality. The rent and purchase price must correspond to the same dwelling.
+6. **Complete cost accounting.** All costs are included on both sides. No free maintenance, no ignored transaction costs.
+
+## 7. Parameters
+
+The simulation requires the following inputs. No defaults are specified here — these are determined separately from market data and personal circumstances.
 
 ### Shared
 
-| Parameter | Value | Rationale |
-|---|---|---|
-| Horizon T | 30 yr | Standard for lifecycle comparison |
-| Inflation | 2.0% | ECB target rate |
-| Wage growth | 2.5% nominal | ≈ inflation + 0.5% real; conservative for tech |
-| CoL (excl. housing) | ~€630/mo | Numbeo, single person, Vienna |
-| Investment return | 7.0% nominal | MSCI World Net TR, 1978–2024 CAGR ≈ 10.5% gross, minus ~0.2% TER, minus tax drag ≈ 7% after-cost; or use 5% real + 2% inflation |
-| KESt | 27.5% flat | Austrian capital gains tax on realized gains |
+| Symbol | Parameter | Unit | Source |
+|---|---|---|---|
+| $T$ | Time horizon | years | User choice |
+| $\text{gross}_0$ | Starting annual gross salary | €/yr | levels.fyi, personal |
+| $g_w$ | Nominal annual wage growth | %/yr | Historical wage data or assumption |
+| $\pi$ | Inflation rate | %/yr | ECB, Statistik Austria VPI |
+| $E_0$ | Monthly non-housing expenses | €/mo | Numbeo, personal tracking |
+| $C_0$ | Starting cash savings | € | Personal |
+| $r$ | Nominal annual investment return (net of TER) | %/yr | MSCI World NTR backtest |
 
-### Rent path
+### Rent
 
-| Parameter | Value | Source |
-|---|---|---|
-| Starting rent | €21/m² × 80m² = €1680/mo | 2025 Vienna avg incl. Betriebskosten |
-| Rent growth | 3.0% nominal | Mietpreisindex: historically ≈ CPI + 1pp |
+| Symbol | Parameter | Unit | Source |
+|---|---|---|---|
+| $R_0$ | Starting monthly rent (incl. Betriebskosten) | €/mo | willhaben, immoscout24, local market |
+| $g_r$ | Annual rent growth | %/yr | Statistik Austria Mietpreisindex |
 
-### Buy path
+### Buy
 
-| Parameter | Value | Source |
-|---|---|---|
-| Purchase price | €500k | 80m² Vienna median |
-| Upfront costs | ~12.5% of price | GrESt 3.5% + Notar 2.4% + Makler 3.6% + Grundbuch 1.1% + bank 3% |
-| Down payment | ≥20% | KIM-VO regulation |
-| Mortgage rate | 3.4% fixed | 2025 Austrian market rate |
-| Term | 25 yr | Standard |
-| Ownership costs | ~€650/mo | Betriebskosten + Rücklage + Grundsteuer + insurance + utilities |
-| Property appreciation | 2.5% nominal | OeNB Wohnimmobilienpreisindex Vienna, long-run avg |
-| Maintenance capex | 1.0% of value/yr | Standard planning assumption |
+| Symbol | Parameter | Unit | Source |
+|---|---|---|---|
+| $\text{price}$ | Purchase price | € | willhaben, immoscout24, local market |
+| $\text{upfront}$ | Closing costs as fraction of price | % | Sum of statutory rates |
+| $\text{down\%}$ | Down payment as fraction of price | % | KIM-VO minimum + user choice |
+| $\text{rate}$ | Annual mortgage interest rate (fixed) | %/yr | Bank offers, durchblicker.at |
+| $N$ | Mortgage term | years | Loan agreement |
+| $O_0$ | Monthly ownership costs | €/mo | Hausverwaltung, municipal data |
+| $g_a$ | Annual nominal property appreciation | %/yr | OeNB Wohnimmobilienpreisindex |
 
----
+## 8. Output
 
-## Investment benchmark
-
-Use **MSCI World Net Total Return Index (USD or EUR-hedged)** as the single benchmark. Justification:
-- Most widely used passive global equity index
-- Represents the "default" retail investor portfolio (e.g. single-ETF strategy via iShares MSCI World UCITS, TER 0.20%)
-- Backtestable from 1969 (gross) / 1978 (net) via msci.com or curvo.eu
-
-For the simulation, use a **fixed annual CAGR** (deterministic). Optional extension: Monte Carlo with log-normal returns calibrated to historical μ and σ.
-
----
-
-## What makes this comparison fair
-
-1. **Same income stream.** Both strategies start with the same gross salary and savings.
-2. **Opportunity cost is explicit.** The renter invests what the buyer spends on down payment + closing costs at t=0.
-3. **Surplus investing is symmetric.** Both strategies invest any leftover savings into the same index fund.
-4. **Tax treatment is complete.** Income tax, KESt on investment gains, and transaction taxes on purchase are all modeled.
-5. **All housing costs included.** Rent path: rent. Buy path: mortgage + ownership + maintenance + upfront costs. No hidden costs on either side.
-
----
-
-## Computation outline
-
-```python
-for month in range(T * 12):
-    # shared
-    savings = net_salary(gross * (1 + g)^(month/12)) - col * (1 + π)^(month/12)
-
-    # rent
-    rent = rent_0 * (1 + rent_g)^(month/12)
-    rent_invest = savings - rent
-    rent_portfolio = rent_portfolio * (1 + r/12) + rent_invest
-
-    # buy
-    mortgage_pmt = annuity(principal, rate, term)  # fixed
-    own_costs = own_costs_0 * (1 + π)^(month/12)
-    buy_invest = max(0, savings - mortgage_pmt - own_costs)
-    buy_portfolio = buy_portfolio * (1 + r/12) + buy_invest
-    mortgage_balance = amortize(balance, rate, pmt)
-
-# terminal
-nw_rent = rent_portfolio - 0.275 * max(0, rent_portfolio - rent_contributions)
-nw_buy  = price * (1 + appr)^T + buy_portfolio - 0.275 * max(0, buy_portfolio - buy_contributions) - mortgage_balance
-
-breakeven = first year where nw_buy > nw_rent
-```
-
----
-
-## Output
-
-1. **Net worth over time** — two curves, one per strategy.
-2. **Breakeven year** — crossover point (if any).
-3. **Sensitivity table** — vary key params (return ±2pp, rent growth ±1pp, appreciation ±1pp, mortgage rate ±1pp) and show terminal NW delta.
+1. **Net worth curves** $NW_{\text{rent}}(t)$ and $NW_{\text{buy}}(t)$ for $t \in [0, T]$.
+2. **Terminal comparison:** $\Delta NW = NW_{\text{buy}}(T) - NW_{\text{rent}}(T)$.
+3. **Breakeven year:** smallest $t$ such that $NW_{\text{buy}}(t) \geq NW_{\text{rent}}(t)$, or "none."
+4. **Sensitivity analysis:** independently vary $r$, $g_r$, $g_a$, and mortgage rate by ±1–2 percentage points. Report how $\Delta NW(T)$ and breakeven year respond. This reveals which assumptions the answer is most sensitive to.
