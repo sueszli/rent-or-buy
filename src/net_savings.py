@@ -1,6 +1,12 @@
 from enum import Enum
 
+import deal
 
+
+@deal.pure
+@deal.pre(lambda gross_special_payments: gross_special_payments >= 0)
+# rounding can cause net > gross for very small amounts (e.g. 0.005 -> 0.01)
+@deal.ensure(lambda gross_special_payments, result, **_: 0 <= result <= gross_special_payments + 0.01)
 def _net_special(gross_special_payments: float) -> float:
     # social insurance
     sv_base = min(gross_special_payments, 12900.00)  # höchstbeitragsgrundlage sonderzahlungen, ASVG §108
@@ -17,6 +23,9 @@ def _net_special(gross_special_payments: float) -> float:
     return round(net_salary, 2)
 
 
+@deal.pure
+@deal.pre(lambda taxable_income: 0 <= taxable_income < 1e12)
+@deal.post(lambda r: r >= 0)
 def _tax_monthly(taxable_income: float) -> float:
     tax_brackets = [
         (1037.33, 0.00),
@@ -48,6 +57,10 @@ def _tax_monthly(taxable_income: float) -> float:
     return round(income_tax, 2)
 
 
+@deal.pure
+@deal.pre(lambda gross_salary_monthly: 0 <= gross_salary_monthly < 1e12)
+# rounding can cause net > gross for very small amounts
+@deal.ensure(lambda gross_salary_monthly, result, **_: 0 <= result <= gross_salary_monthly + 0.01)
 def _net_running(gross_salary_monthly: float) -> float:
     gross = gross_salary_monthly
 
@@ -63,6 +76,9 @@ def _net_running(gross_salary_monthly: float) -> float:
     return round(net_salary, 2)
 
 
+@deal.pure
+@deal.pre(lambda annual_gross_salary: 0 <= annual_gross_salary < 1e13)
+@deal.post(lambda r: r >= 0)
 def _net_salary_annual(annual_gross_salary: float) -> float:
     # based on: https://bruttonetto.arbeiterkammer.at/
     if annual_gross_salary <= 0:
@@ -88,6 +104,7 @@ class IncomePercentile(Enum):
     pct_90th = 91_300
 
 
+@deal.pure
 def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool) -> float:
     cost_of_living = {
         # single person in vienna, 1bd apartment, not overly frugal or lavish

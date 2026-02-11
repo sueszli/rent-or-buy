@@ -1,7 +1,3 @@
-# 
-# venv
-# 
-
 # init venv from imports
 .PHONY: venv
 venv:
@@ -22,5 +18,7 @@ precommit:
 	uvx isort .
 	uvx autoflake --remove-all-unused-imports --recursive --in-place .
 	uvx black --line-length 5000 .
-	uvx pyright src/
-	uv run --with pytest -m pytest tests/ -v
+	uvx ruff check .
+	# uv run --with pytest -m pytest tests/ -v
+	uv run --with deal==4.24.6 python3 -m deal lint src/*.py
+	uv run --with deal==4.24.6 --with hypothesis python3 -m deal test src/*.py

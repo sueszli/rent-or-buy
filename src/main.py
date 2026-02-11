@@ -2,6 +2,7 @@
 # requires-python = ">=3.14"
 # dependencies = [
 #     "tqdm==4.66.4",
+#     "deal==4.24.6",
 # ]
 # ///
 

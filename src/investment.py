@@ -1,15 +1,13 @@
-def rent_monthly(t: int, starting_rent: float, annual_rent_growth: float) -> float:
-    return starting_rent * (1 + annual_rent_growth) ** (t / 12)
+import deal
 
 
-def simulate_rent_strategy(
-    months: int,
-    starting_cash: float,
-    monthly_savings: float,
-    starting_rent: float,
-    annual_rent_growth: float,
-    annual_return: float,
-) -> tuple[list[float], list[float]]:
+@deal.pure
+@deal.pre(lambda months, **_: 0 <= months <= 1200)
+@deal.pre(lambda starting_cash, **_: 0 <= starting_cash <= 1e9)
+@deal.pre(lambda annual_return, **_: -1 < annual_return <= 2.0)
+@deal.ensure(lambda months, result, **_: len(result[0]) == len(result[1]) == months + 1)
+@deal.ensure(lambda starting_cash, result, **_: result[0][0] == starting_cash and result[1][0] == starting_cash)
+def simulate_portfolio(months: int, starting_cash: float, monthly_contribution: float, annual_return: float) -> tuple[list[float], list[float]]:
     monthly_return = annual_return / 12
 
     portfolio = [0.0] * (months + 1)
@@ -18,9 +16,7 @@ def simulate_rent_strategy(
     contributions[0] = starting_cash
 
     for t in range(1, months + 1):
-        rent = rent_monthly(t, starting_rent, annual_rent_growth)
-        contribution = monthly_savings - rent
-        portfolio[t] = portfolio[t - 1] * (1 + monthly_return) + contribution
-        contributions[t] = contributions[t - 1] + contribution
+        portfolio[t] = portfolio[t - 1] * (1 + monthly_return) + monthly_contribution
+        contributions[t] = contributions[t - 1] + monthly_contribution
 
     return portfolio, contributions

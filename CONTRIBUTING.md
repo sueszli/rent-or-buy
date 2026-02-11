@@ -1,6 +1,4 @@
-# Code Style
-
-Follow these rules for all changes in this repository:
+Quality:
 
 - Match existing code style and architectural patterns.
 - Zero Technical Debt: Fix issues immediately. Never rely on future refactoring.
@@ -11,11 +9,14 @@ Follow these rules for all changes in this repository:
 - Flat Structure: Keep if/else blocks small. Avoid nesting beyond two levels if possible.
 - Centralize Control Flow: Branching logic belongs in parents. Leaf functions should be pure logic.
 - Fail Fast: Detect unexpected conditions immediately. Raise Exceptions rather than corrupt state.
-- [Ask for forgiveness not permission](https://docs.python.org/3/glossary.html#term-eafp): Assume valid keys or attributes exist and catch exceptions if the assumption proves false. Use try-except blocks:
+
+Testing:
+
+- Contract based testing: use the `deal` library to specify contracts for each function. Prefer `deal.pure` functions. Use single-character variable names for contract arguments where possible.
+- Use assert statements for simple checks.
 
 Pre commit:
 
 ```bash
 make precommit
-uv run src/main.py
 ```
