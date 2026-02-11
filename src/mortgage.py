@@ -1,8 +1,8 @@
-# 
+#
 # !!! WORK IN PROGRESS !!!
-# 
+#
 # use erste bank calculator as a reference
-# 
+#
 
 import deal
 
