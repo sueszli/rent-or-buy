@@ -12,3 +12,10 @@ Follow these rules for all changes in this repository:
 - Centralize Control Flow: Branching logic belongs in parents. Leaf functions should be pure logic.
 - Fail Fast: Detect unexpected conditions immediately. Raise Exceptions rather than corrupt state.
 - [Ask for forgiveness not permission](https://docs.python.org/3/glossary.html#term-eafp): Assume valid keys or attributes exist and catch exceptions if the assumption proves false. Use try-except blocks:
+
+Pre commit:
+
+```bash
+make fmt
+uv run src/main.py
+```
