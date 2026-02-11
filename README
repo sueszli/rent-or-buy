@@ -4,6 +4,21 @@
 (2a) pick portfolio
 (2b) pick a mortgage
 
-https://www.reddit.com/r/Finanzen/comments/12u8srh/ftse_allworld/
-most "neutral" portfolio possible. It covers ~3,700 stocks vs the ~1,500 in the MSCI World.
-It removes the criticism that "the US market is overvalued" by diluting US exposure slightly (though it is still ~60% US).
+
+portfolios:
+
+- Vanguard FTSE All-World UCITS ETF (Acc) (ISIN: IE00BK5BQT80).
+    - https://www.reddit.com/r/Finanzen/comments/12u8srh/ftse_allworld/
+    - most "neutral" portfolio possible. It covers ~3,700 stocks vs the ~1,500 in the MSCI World.
+    - It removes the criticism that "the US market is overvalued" by diluting US exposure slightly (though it is still ~60% US).
+    - must invest at least 10 years
+    - https://curvo.eu/backtest/
+
+then finally compute the real (-2.54%) and nominal returns of both
+
+Crucial Warning for Your Model
+
+- If you run a backtest starting from 2010 onwards, your Buy vs. Rent model will be biased.
+- 2010–2021 was a historic bull run for equities (especially US tech).
+- Using only this data will calculate a CAGR of ~11–12%, which makes "Renting" look artificially superior to "Buying".
+- Fix: Ensure your model robustness check includes a "Lost Decade" scenario (e.g., 2000–2010 returns) where the stock market is flat for 10 years.
