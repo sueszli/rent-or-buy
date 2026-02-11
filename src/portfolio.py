@@ -5,52 +5,22 @@ from dataclasses import dataclass
 import deal
 import polars as pl
 
-"""
-Portfolio Simulation Module
-
-This module simulates the performance of a global equity portfolio under Austrian tax law.
-It is designed to compare "Rent and Invest" vs "Buy" scenarios.
-
-Asset Class:
-    Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
-    - Data source: curvo.eu/backtest/
-    - Strategy: Buy and hold, accumulating dividends.
-
-Key Considerations:
-    - Austrian Tax (KESt): 27.5% on capital gains.
-    - AgE (Ausschüttungsgleiche Erträge): "Deemed distributed income".
-      In Austria, accumulating funds are taxed annually on the dividends they *would* have distributed.
-      This tax is deducted from the investor's cash account (not the fund value directly),
-      creating a "tax drag" on liquidity. To prevent double taxation, the acquisition cost (basis)
-      is stepped up by the specific amount of the AgE.
-"""
-
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
 
-# Approx historical inflation 2%
-# Used to adjust nominal returns to real returns if requested.
-INFLATION_MONTHLY = (1.02) ** (1 / 12) - 1
+
+ANNUAL_INFLATION = 1.0254
 
 
 @dataclass
 class PortfolioResult:
-    """
-    Result of the portfolio simulation.
-
-    Attributes:
-        values: List of portfolio market values at each time step t.
-        cost_basis: List of tax-adjusted acquisition costs at each time step t.
-                    This is crucial for calculating the final capital gains tax.
-                    Capital Gain = Value - Cost Basis.
-    """
-    values: list[float]
-    cost_basis: list[float]
+    values: list[float]  # values at each time step t
+    cost_basis: list[float]  # incurred costs at each time step t, adjusted for tax drag (AgE)
 
 
-@deal.pre(lambda monthly_savings, start_month, months, **kwargs: bool(re.match(r"^\d{2}/\d{4}$", start_month)))
-@deal.pre(lambda monthly_savings, start_month, months, **kwargs: 0 <= months <= 1200)
-@deal.pre(lambda monthly_savings, start_month, months, **kwargs: 0 <= monthly_savings <= 1e9)
-@deal.ensure(lambda monthly_savings, start_month, months, **kwargs: len(kwargs["result"].values) == months + 1)
+@deal.pre(lambda start_month, **_: bool(re.match(r"^\d{2}/\d{4}$", start_month)))
+@deal.pre(lambda months, **_: 0 <= months <= 1200)
+@deal.pre(lambda monthly_savings, **_: 0 <= monthly_savings <= 1e9)
+@deal.ensure(lambda months, result, **_: len(result.values) == months + 1)
 def simulate_portfolio(
     monthly_savings: float,
     start_month: str,
@@ -61,7 +31,15 @@ def simulate_portfolio(
     real: bool = False,
 ) -> PortfolioResult:
     """
-    Simulates a monthly investment plan into the FTSE All-World ETF.
+    Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
+
+    Key Considerations:
+        - Austrian Tax (KESt): 27.5% on capital gains.
+        - AgE (Ausschüttungsgleiche Erträge): "Deemed distributed income".
+        In Austria, accumulating funds are taxed annually on the dividends they *would* have distributed.
+        This tax is deducted from the investor's cash account (not the fund value directly),
+        creating a "tax drag" on liquidity. To prevent double taxation, the acquisition cost (basis)
+        is stepped up by the specific amount of the AgE.
 
     Args:
         monthly_savings: Amount saved and invested at the *end* of each month.
@@ -80,20 +58,14 @@ def simulate_portfolio(
         PortfolioResult containing market values and cost basis for each month.
     """
     df = pl.read_csv(DATA_PATH)
-
-    # Price data column is the second column
     df = df.rename({df.columns[1]: "price"})
 
     # Find the row index corresponding to the start month
     start_idx_rows = df.with_row_index().filter(pl.col("Date") == start_month).select("index")
-
-    if start_idx_rows.height == 0:
-        raise ValueError(f"Start month {start_month} not found in data")
+    assert start_idx_rows.height != 0
 
     start_idx = start_idx_rows.item(0, 0)
-
-    # Ensure sufficient data exists for the requested simulation horizon
-    assert start_idx + months < df.height, f"Not enough data for {months} months starting from {start_month}"
+    assert start_idx + months < df.height
 
     # Slice the data for the simulation period [t=0 to t=months]
     subset = df.slice(start_idx, months + 1)
@@ -115,12 +87,12 @@ def simulate_portfolio(
 
         # 1. Calculate Nominal Market Return
         nominal_return = price_curr / price_prev
-        
+
         # 2. Simulate Tax Drag (AgE)
         # Yield is provided as an annual figure, so we smooth it over 12 months.
         # ag_e_gross: The theoretical dividend amount accumulated this month.
         ag_e_gross = portfolio_values[t - 1] * (ag_e_yield / 12)
-        
+
         # ag_e_tax: The actual tax bill the investor must pay.
         ag_e_tax = ag_e_gross * tax_rate
 
@@ -138,7 +110,7 @@ def simulate_portfolio(
 
     # Post-Processing: Deflation
     if real:
-        deflators = [(1 + INFLATION_MONTHLY) ** t for t in range(months + 1)]
+        deflators = [(1 + ((ANNUAL_INFLATION) ** (1 / 12) - 1)) ** t for t in range(months + 1)]
         portfolio_values = [v / d for v, d in zip(portfolio_values, deflators)]
         cost_basis = [b / d for b, d in zip(cost_basis, deflators)]
 
