@@ -1,3 +1,6 @@
+# WARNING: this is inaccurate!
+# use erste bank calculator as a baseline
+
 TRANSFER_TAX_RATE = 0.035
 NOTARY_RATE = 0.024  # 2% + 20% VAT ≈ 2.4%
 AGENT_RATE = 0.036  # 3% + 20% VAT = 3.6%
