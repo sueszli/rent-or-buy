@@ -28,7 +28,7 @@ $$\Sigma_r(t) = \Sigma_r(t-1) + \left[\text{savings}(t) - \text{rent}(t)\right]$
 
 ## What to Build
 
-1. A function `rent_monthly(t, R_0, g_r) -> float`.
+1. A function `rent_monthly(t, R_0, g_r) -> float` in `src/investment.py`.
 2. A simulation function that runs month-by-month for `12*T` months, returning arrays of `P_r(t)` and `Σ_r(t)`.
 
 ## Dependencies
