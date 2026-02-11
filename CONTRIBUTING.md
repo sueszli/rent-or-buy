@@ -10,19 +10,15 @@ Quality:
 - Centralize Control Flow: Branching logic belongs in parents. Leaf functions should be pure logic.
 - Fail Fast: Detect unexpected conditions immediately. Raise Exceptions rather than corrupt state.
 
-Testing:
+Correctness:
 
-- Contract based testing: use the `deal` library to specify contracts for each function. Prefer `deal.pure` functions. Use single-character variable names for contract arguments where possible.
+- Contract based testing: use the `deal` library to specify contracts for each function. Prefer `deal.pure` functions.
 - Use assert statements for simple checks.
+
+Dependency Management:
+
+- Never install global dependencies. Always use `uv`. Prefer inline dependencies (e.g. `/// script` blocks in Python script). Else fall back to `uv venv .venv`.
 
 Pre commit:
 
-```bash
-make precommit
-```
-
-Running code:
-
-```bash
-uv run src/main.py
-```
+- After each change, run `make precommit`.
