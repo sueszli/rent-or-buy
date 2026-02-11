@@ -55,9 +55,11 @@ $$\text{expenses}(t) = E_0 \cdot (1 + \pi)^{t/12}$$
 
 where $E_0$ is baseline monthly non-housing expenses and $\pi$ is annual inflation.
 
-$$\text{savings}(t) = \text{net}(t) - \text{expenses}(t)$$
+$$\text{savings}(t) = \text{net}(t) - \text{expenses}(t) - \text{tax\_bill}(t)$$
 
 This is the disposable income available for housing and investing each month. It is identical for both strategies.
+
+Note on $\text{tax\_bill}(t)$: In Austria, accumulating ETFs generate a yearly tax bill on "deemed distributions" (AgE), which the broker deducts from the cash account. This reduces the cash available for new investments.
 
 ---
 
@@ -66,6 +68,9 @@ This is the disposable income available for housing and investing each month. It
 **Initial condition.** The renter does not need a down payment. Their entire starting cash $C_0$ is invested into the index fund at $t = 0$:
 
 $$P_r(0) = C_0$$
+
+**Cost Basis Tracking.** We must track the tax-adjusted cost basis for the Austrian tax calculation.
+$$B_r(0) = C_0$$
 
 **Each month:**
 
@@ -79,9 +84,18 @@ $$P_r(t) = P_r(t-1) \cdot \left(1 + \frac{r}{12}\right) + \left[\text{savings}(t
 
 where $r$ is annual nominal investment return (net of fund TER).
 
-Track cumulative contributions for tax purposes:
+**Annual AgE Tax Adjustment (once per year):**
+Austrian funds report "Ausschüttungsgleiche Erträge" (AgE) annually. The broker deducts 27.5% tax on this amount from the *cash account*.
+Crucially, this tax increases the acquisition cost (basis) to prevent double taxation.
 
-$$\Sigma_r(t) = \Sigma_r(t-1) + \left[\text{savings}(t) - \text{rent}(t)\right]$$
+$$B_r(t) = B_r(t-1) + \text{AgE}_{gross}(t)$$
+$$\text{tax\_bill}(t) = 0.275 \cdot \text{AgE}_{gross}(t)$$
+
+Current estimate for AgE tax drag: ~0.5% of asset value annually, payable from cash.
+
+Track cumulative contributions for tax purposes (adjusted basis):
+
+$$\Sigma_r(t) = B_r(t)$$
 
 with $\Sigma_r(0) = C_0$.
 
@@ -89,7 +103,9 @@ with $\Sigma_r(0) = C_0$.
 
 $$NW_{\text{rent}}(T) = P_r(T) - 0.275 \cdot \max\!\left(0,\; P_r(T) - \Sigma_r(T)\right)$$
 
-The 27.5% is Austrian KESt (flat capital gains tax), applied to the difference between portfolio value and total contributions (= realized gain at liquidation).
+$$NW_{\text{rent}}(T) = P_r(T) - 0.275 \cdot \max\!\left(0,\; P_r(T) - B_r(T)\right)$$
+
+The 27.5% is Austrian KESt (flat capital gains tax), applied to the difference between portfolio value and the *stepped-up cost basis* $B_r(T)$.
 
 ---
 
@@ -157,8 +173,6 @@ We use the **Net Total Return** variant (dividends reinvested after withholding 
 
 The simulation uses a **fixed annual CAGR** $r$ for the return. This is a simplification — real returns are volatile — but sensitivity analysis across a range of $r$ values captures the uncertainty without the complexity of stochastic modeling.
 
-Historical reference for calibrating $r$: MSCI World NTR EUR, 1978–2024, annualized ≈ 9–10%. After subtracting ~0.2% TER and adjusting for the Austrian Vorabpauschale (deemed distribution tax on accumulating ETFs, minor impact), a reasonable base case is $r \approx 7\%$ nominal.
-
 ## 6. Fairness Constraints
 
 The comparison is only valid if these conditions hold:
@@ -198,11 +212,11 @@ The simulation requires the following inputs. No defaults are specified here —
 | Symbol | Parameter | Unit | Source |
 |---|---|---|---|
 | $\text{price}$ | Purchase price | € | willhaben, immoscout24, local market |
-| $\text{upfront}$ | Closing costs as fraction of price | % | Sum of statutory rates |
+| $\text{upfront}$ | Closing costs as fraction of price | % | ~10% (3.5% GrESt, 1.1% Reg, 3% Broker, ~2% Legal) |
 | $\text{down\%}$ | Down payment as fraction of price | % | KIM-VO minimum + user choice |
 | $\text{rate}$ | Annual mortgage interest rate (fixed) | %/yr | Bank offers, durchblicker.at |
 | $N$ | Mortgage term | years | Loan agreement |
-| $O_0$ | Monthly ownership costs | €/mo | Hausverwaltung, municipal data |
+| $O_0$ | Monthly ownership costs + Maintenace Reserve | €/mo | ~1.00 EUR/sqm min. reserve + operating costs |
 | $g_a$ | Annual nominal property appreciation | %/yr | OeNB Wohnimmobilienpreisindex |
 
 ## 8. Output
