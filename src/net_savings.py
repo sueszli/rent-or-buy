@@ -1,17 +1,18 @@
-def _net_special(gross_special_payments: int) -> float:
-    gross = float(gross_special_payments)
+from enum import Enum
 
+
+def _net_special(gross_special_payments: float) -> float:
     # social insurance
-    sv_base = min(gross, 12900.00)  # höchstbeitragsgrundlage sonderzahlungen, ASVG §108
+    sv_base = min(gross_special_payments, 12900.00)  # höchstbeitragsgrundlage sonderzahlungen, ASVG §108
     social_insurance = round(sv_base * 0.1707, 2)  # spacial payments rate
 
     # income tax
-    taxable_base = gross - social_insurance
+    taxable_base = gross_special_payments - social_insurance
     tax_free_amount = 620.00 * 2  # first 620 EUR of both payments are tax-free, EStG §67 (1) greibetrag
     taxed_amount = max(0.00, taxable_base - tax_free_amount)
     income_tax = round(taxed_amount * 0.06, 2)  # sechstel-tarif EStG §67 (1)
 
-    net_salary = gross - social_insurance - income_tax
+    net_salary = gross_special_payments - social_insurance - income_tax
 
     return round(net_salary, 2)
 
@@ -47,8 +48,8 @@ def _tax_monthly(taxable_income: float) -> float:
     return round(income_tax, 2)
 
 
-def _net_running(gross_salary_monthly: int) -> float:
-    gross = float(gross_salary_monthly)
+def _net_running(gross_salary_monthly: float) -> float:
+    gross = gross_salary_monthly
 
     # social insurance
     sv_base = min(gross, 6090.00)  # höchstbeitragsgrundlage, ASVG §108
@@ -62,17 +63,46 @@ def _net_running(gross_salary_monthly: int) -> float:
     return round(net_salary, 2)
 
 
-def net_salary(annual_gross_salary: int) -> int:
+def _net_salary_annual(annual_gross_salary: float) -> float:
     # based on: https://bruttonetto.arbeiterkammer.at/
     if annual_gross_salary <= 0:
         return 0
 
     # 12x running payments
     gross_monthly_running = annual_gross_salary / 14
-    net_monthly = _net_running(int(gross_monthly_running))
+    net_monthly = _net_running(gross_monthly_running)
 
     # 2x special payments (13th/14th)
     gross_special_payments = 2 * gross_monthly_running
-    net_special = _net_special(int(gross_special_payments))
+    net_special = _net_special(gross_special_payments)
 
-    return int(12 * net_monthly + net_special)
+    return 12 * net_monthly + net_special
+
+
+class IncomePercentile(Enum):
+    # based on: https://www.levels.fyi/heatmap/europe/
+    pct_10th = 28_600
+    pct_25th = 43_000
+    pct_50th = 58_300
+    pct_75th = 74_100
+    pct_90th = 91_300
+
+
+_COST_OF_LIVING = {
+    # single person in vienna, 1bd apartment, not overly frugal or lavish
+    # based on:
+    # - https://www.numbeo.com/cost-of-living/in/Vienna
+    # - https://www.willhaben.at/iad/immobilien/mietwohnungen/wien
+    "Housing": 0.00 if owns_property else 850.00,
+    "Utilities": 290.00,  # energy + heating + internet + mobile
+    "Groceries": 280.00,  # food
+    "Transportation": 50.00,  # public transport annual pass, occasional taxi
+    "Miscellaneous": 200.00,  # hygiene, clothing, social, repairs
+}
+
+
+def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool) -> float:
+    # avg savings, accounting for 13th/14th salary
+    annual_expenses = sum(_COST_OF_LIVING.values())
+    net_annual_salary = _net_salary_annual(income_annual.value)
+    return (net_annual_salary - annual_expenses) / 12
