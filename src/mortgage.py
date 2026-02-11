@@ -204,6 +204,7 @@ def estimate_mortgage_payoff_years(
         save_months = remaining / effective_monthly_save
         save_years = save_months / 12.0
     else:
+        save_months = 0.0
         save_years = float("inf")
 
     try:

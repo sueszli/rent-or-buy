@@ -16,6 +16,6 @@ Follow these rules for all changes in this repository:
 Pre commit:
 
 ```bash
-make fmt
+make precommit
 uv run src/main.py
 ```

@@ -16,12 +16,11 @@ lock:
 	uv pip freeze > requirements.in
 	uv pip compile requirements.in -o requirements.txt
 
-# 
-# utils
-# 
-
-.PHONY: fmt
-fmt:
+# format, typecheck, test
+.PHONY: precommit
+precommit:
 	uvx isort .
 	uvx autoflake --remove-all-unused-imports --recursive --in-place .
 	uvx black --line-length 5000 .
+	uvx pyright src/
+	uv run --with pytest -m pytest tests/ -v
