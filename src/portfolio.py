@@ -31,12 +31,12 @@ def simulate_portfolio(
     real: bool = False,
 ) -> PortfolioResult:
     """
-    Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
+    Product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
+    Equity ETF that tracks the entire world stock market.
 
     Key Considerations:
-        - Austrian Tax (KESt): 27.5% on capital gains.
-        - AgE (Ausschüttungsgleiche Erträge): "Deemed distributed income".
-        In Austria, accumulating funds are taxed annually on the dividends they *would* have distributed.
+        - KESt (Kapitalertragssteuer): 27.5% on capital gains
+        - AgE (Ausschüttungsgleiche Erträge): on dividends they *would* have distributed.
         This tax is deducted from the investor's cash account (not the fund value directly),
         creating a "tax drag" on liquidity. To prevent double taxation, the acquisition cost (basis)
         is stepped up by the specific amount of the AgE.
