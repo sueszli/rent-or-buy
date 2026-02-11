@@ -7,10 +7,9 @@ GROSS_INCOME_BY_PERCENTILE = {
     "90th": 91_300,
 }
 
-EXPENSES_BREAKDOWN = {
+COST_OF_LIVING_BREAKDOWN = {
     # vienna
     # adjusted from numbeo.com: single, central 1bedroom
-    "Housing": 800.00,
     "Utilities": 150.00,
     "Groceries": 280.00,
     "Transportation": 40.00,
@@ -19,4 +18,4 @@ EXPENSES_BREAKDOWN = {
     "Miscellaneous": 50.00,
 }
 
-ANNUAL_EXPENSES = sum(EXPENSES_BREAKDOWN.values()) * 12
+ANNUAL_EXPENSES = sum(COST_OF_LIVING_BREAKDOWN.values()) * 12
