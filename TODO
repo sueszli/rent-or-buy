@@ -1,8 +1,5 @@
 implement portfolio to read world etf
 
-move from inline dependencies to uv venv .venv
-
-update makefile
 
 chat with gemini, study portfolio.py and whether it's sane
 do some plotnine plots to see if the data looks sane

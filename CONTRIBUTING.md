@@ -21,4 +21,5 @@ Dependency Management:
 
 Pre commit:
 
+- Create virtual env with `make venv` and run code to see if it behaves as expected.
 - After each change, run `make precommit`.

@@ -7,7 +7,7 @@ import polars as pl
 
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
 ANNUAL_INFLATION = 1.0254
-TER_VANGUARD = 0.19 # Total Expense Ratio (TER), used to be 0.22% before Oct 2025
+TER_VANGUARD = 0.19  # Total Expense Ratio (TER), used to be 0.22% before Oct 2025
 
 
 @dataclass
