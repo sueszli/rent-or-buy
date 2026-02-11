@@ -5,7 +5,7 @@
 A salaried worker in Vienna has some starting cash and a stable income. They need a place to live. They have two options:
 
 - **Rent** an apartment and invest all surplus income into a global equity index fund.
-- **Buy** an apartment with a mortgage and invest any remaining surplus into the same fund.
+- **Buy** an apartment with a mortgage. The buyer does not invest any surplus income.
 
 **Which strategy produces higher net worth after $T$ years?**
 
@@ -27,7 +27,7 @@ We compare **terminal net worth** — the total value of everything you own minu
 
 $$NW(T) = \text{liquid assets}(T) + \text{property equity}(T) - \text{debt}(T)$$
 
-For the renter, this is just the investment portfolio (after tax on gains). For the buyer, this is the property value plus any surplus portfolio, minus remaining mortgage and tax on portfolio gains.
+For the renter, this is just the investment portfolio (after tax on gains). For the buyer, this is the property value minus remaining mortgage.
 
 **Secondary metric:** the **breakeven year** — the first $T$ at which $NW_{\text{buy}}(T) > NW_{\text{rent}}(T)$. If no crossover occurs within the horizon, renting wins outright.
 
@@ -125,17 +125,11 @@ $$\text{own}(t) = O_0 \cdot (1 + \pi)^{t/12}$$
 
 where $O_0$ includes Betriebskosten, Rücklage, Grundsteuer, insurance, and maintenance. These grow with inflation.
 
-**Each month — surplus investing:**
+**Each month — check affordability:**
 
 $$\text{surplus}(t) = \text{savings}(t) - \text{pmt} - \text{own}(t)$$
 
-$$P_b(t) = P_b(t-1) \cdot \left(1 + \frac{r}{12}\right) + \max(0,\;\text{surplus}(t))$$
-
-Note: if $\text{surplus}(t) < 0$, the buyer cannot afford the house on their income. This is a constraint violation, not a modeled scenario.
-
-Track contributions:
-
-$$\Sigma_b(t) = \Sigma_b(t-1) + \max(0,\;\text{surplus}(t))$$
+Note: if $\text{surplus}(t) < 0$, the buyer cannot afford the house on their income. This is a constraint violation, not a modeled scenario. The buyer is assumed to consume any positive surplus (it does not contribute to net worth).
 
 **Property appreciation:**
 
@@ -145,13 +139,13 @@ where $g_a$ is annual nominal property appreciation.
 
 **Terminal net worth:**
 
-$$NW_{\text{buy}}(T) = V(T) + P_b(T) - 0.275 \cdot \max\!\left(0,\; P_b(T) - \Sigma_b(T)\right) - M(T)$$
+$$NW_{\text{buy}}(T) = V(T) - M(T)$$
 
 Note: there is no capital gains tax on the primary residence in Austria (no Immobilienertragsteuer for Hauptwohnsitz held > 2 years).
 
 ## 5. Investment Benchmark
 
-Both strategies invest surplus cash into the same vehicle: a **global equity index fund tracking the MSCI World Net Total Return Index** via an accumulating UCITS ETF (e.g. iShares Core MSCI World, TER ~0.20%).
+The **Rent-and-Invest** strategy invests surplus cash into a **global equity index fund tracking the MSCI World Net Total Return Index** via an accumulating UCITS ETF (e.g. iShares Core MSCI World, TER ~0.20%). The **Buy-to-Live** strategy does not invest.
 
 Why this benchmark:
 - It is the default "set and forget" portfolio recommended by virtually all passive investing guides.
@@ -172,7 +166,7 @@ The comparison is only valid if these conditions hold:
 1. **Same starting cash.** Both strategies begin with the same $C_0$. The buyer uses it for the down payment; the renter invests it.
 2. **Same income stream.** Same gross salary, same wage growth, same tax treatment.
 3. **Same non-housing expenses.** Cost of living excluding housing is identical.
-4. **Same investment vehicle.** Any surplus beyond housing costs is invested into the same fund at the same return.
+4. **Investment strategy.** The renter invests any surplus beyond housing costs into the index fund. The buyer does not invest surplus cash (it is assumed consumed).
 5. **Comparable housing.** The rented apartment and the purchased apartment are equivalent in size, location, and quality. The rent and purchase price must correspond to the same dwelling.
 6. **Complete cost accounting.** All costs are included on both sides. No free maintenance, no ignored transaction costs.
 
