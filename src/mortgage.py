@@ -1,5 +1,8 @@
-# WARNING: this is inaccurate!
-# use erste bank calculator as a baseline
+# 
+# !!! WORK IN PROGRESS !!!
+# 
+# use erste bank calculator as a reference
+# 
 
 import deal
 
@@ -120,6 +123,7 @@ def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) 
     if annual_rate <= 1e-9:
         return principal / (years * 12)
     monthly_rate = annual_rate / 12.0
+    assert monthly_rate > 0, "Monthly rate must be positive for this formula"
     num_payments = years * 12
     return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / ((1 + monthly_rate) ** num_payments - 1)
 
@@ -158,6 +162,7 @@ def _simulate_payoff_years(
 
         # monthly interest and principal from standard payment
         interest = balance * monthly_interest_rate
+        assert interest >= 0, f"Interest {interest} must be positive (balance={balance}, rate={monthly_interest_rate})"
         total_interest += interest
         principal = monthly_mortgage_payment - interest
         principal = max(principal, 0.0)  # prevent negative if rate=0

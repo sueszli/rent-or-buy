@@ -4,13 +4,13 @@ import deal
 
 
 @deal.pure
-@deal.pre(lambda gross_special_payments: gross_special_payments >= 0)
-# rounding can cause net > gross for very small amounts (e.g. 0.005 -> 0.01)
+@deal.pre(lambda gross_special_payments: 0 <= gross_special_payments < 1e12)
 @deal.ensure(lambda gross_special_payments, result, **_: 0 <= result <= gross_special_payments + 0.01)
 def _net_special(gross_special_payments: float) -> float:
     # social insurance
     sv_base = min(gross_special_payments, 12900.00)  # höchstbeitragsgrundlage sonderzahlungen, ASVG §108
     social_insurance = round(sv_base * 0.1707, 2)  # spacial payments rate
+    assert social_insurance <= gross_special_payments
 
     # income tax
     taxable_base = gross_special_payments - social_insurance
@@ -59,7 +59,6 @@ def _tax_monthly(taxable_income: float) -> float:
 
 @deal.pure
 @deal.pre(lambda gross_salary_monthly: 0 <= gross_salary_monthly < 1e12)
-# rounding can cause net > gross for very small amounts
 @deal.ensure(lambda gross_salary_monthly, result, **_: 0 <= result <= gross_salary_monthly + 0.01)
 def _net_running(gross_salary_monthly: float) -> float:
     gross = gross_salary_monthly
@@ -67,6 +66,7 @@ def _net_running(gross_salary_monthly: float) -> float:
     # social insurance
     sv_base = min(gross, 6090.00)  # höchstbeitragsgrundlage, ASVG §108
     social_insurance = round(sv_base * 0.1812, 2)  # standard rate
+    assert social_insurance <= gross
 
     # income tax
     taxable_income = gross - social_insurance
