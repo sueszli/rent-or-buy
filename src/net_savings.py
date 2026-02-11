@@ -88,21 +88,20 @@ class IncomePercentile(Enum):
     pct_90th = 91_300
 
 
-_COST_OF_LIVING = {
-    # single person in vienna, 1bd apartment, not overly frugal or lavish
-    # based on:
-    # - https://www.numbeo.com/cost-of-living/in/Vienna
-    # - https://www.willhaben.at/iad/immobilien/mietwohnungen/wien
-    "Housing": 0.00 if owns_property else 850.00,
-    "Utilities": 290.00,  # energy + heating + internet + mobile
-    "Groceries": 280.00,  # food
-    "Transportation": 50.00,  # public transport annual pass, occasional taxi
-    "Miscellaneous": 200.00,  # hygiene, clothing, social, repairs
-}
-
-
 def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool) -> float:
-    # avg savings, accounting for 13th/14th salary
-    annual_expenses = sum(_COST_OF_LIVING.values())
+    cost_of_living = {
+        # single person in vienna, 1bd apartment, not overly frugal or lavish
+        # based on:
+        # - https://www.numbeo.com/cost-of-living/in/Vienna
+        # - https://www.willhaben.at/iad/immobilien/mietwohnungen/wien
+        "Housing": 0.00 if owns_property else 850.00,
+        "Utilities": 290.00,  # energy + heating + internet + mobile
+        "Groceries": 280.00,  # food
+        "Transportation": 50.00,  # public transport annual pass, occasional taxi
+        "Miscellaneous": 200.00,  # hygiene, clothing, social, repairs
+    }
+
+    # avg monthly savings, smoothing the 13th/14th salary over the year
+    annual_expenses = sum(cost_of_living.values()) * 12
     net_annual_salary = _net_salary_annual(income_annual.value)
     return (net_annual_salary - annual_expenses) / 12
