@@ -1,33 +1,25 @@
 import pathlib
-from dataclasses import dataclass
 
 import deal
 import polars as pl
 
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
-TER_VANGUARD = 0.19  # from: https://www.justetf.com/en/etf-profile.html?isin=IE00B3RBWM25
 TAX_RATE = 0.275  # kapital ertragsteuer KESt
 AG_E_YIELD = 0.0  # Annual yield of "Ausschüttungsgleiche Erträge" (AgE)
-
-
-@dataclass
-class PortfolioResult:
-    values: list[float]  # values at each time step t
-    cost_basis: list[float]  # incurred costs at each time step t, adjusted for tax drag (AgE)
 
 
 @deal.pre(lambda start_month, **_: 1 <= start_month <= 12)
 @deal.pre(lambda start_year, **_: 1900 <= start_year <= 2100)
 @deal.pre(lambda months, **_: 0 <= months <= 1200)
 @deal.pre(lambda monthly_savings, **_: 0 <= monthly_savings <= 1e9)
-@deal.ensure(lambda months, result, **_: len(result.values) == months + 1)
+@deal.ensure(lambda months, result, **_: len(result) == months + 1)
 def simulate_portfolio(
     monthly_savings: float,
     start_year: int,
     start_month: int,
     months: int,
     initial_investment: float = 0.0,
-) -> PortfolioResult:
+) -> list[float]:
     df = pl.read_csv(DATA_PATH).select(pl.col("Date"), pl.col("^Vanguard.*$").alias("price"))
     start_idx = df.select(pl.arg_where(pl.col("Date") == f"{start_month:02d}/{start_year}")).item(0, 0)
     prices = df.slice(start_idx, months + 1)["price"].to_list()
@@ -70,4 +62,6 @@ def simulate_portfolio(
         # The basis increases by net investment AND the gross AgE amount.
         cost_basis[t] = cost_basis[t - 1] + net_investment + ag_e_gross
 
-    return PortfolioResult(values=portfolio_values, cost_basis=cost_basis)
+    # Calculate net value (after hypothetical liquidation tax)
+    # This represents the "cash in hand" value if the portfolio were sold at time t.
+    return [val - max(0.0, val - basis) * TAX_RATE for val, basis in zip(portfolio_values, cost_basis)]
