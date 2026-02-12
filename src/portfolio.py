@@ -3,6 +3,7 @@ import pathlib
 
 import polars as pl
 from dateutil.relativedelta import relativedelta
+from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scale_x_date, scale_y_continuous, theme, theme_minimal
 
 # product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
 #
@@ -67,7 +68,7 @@ def _prices(start_year: int, start_month: int, months: int) -> list[float]:
     return prices
 
 
-def simulate_austrian_portfolio(monthly_savings: float, years: int, start_year: int = 2004, start_month: int = 1) -> list[float]:
+def simulate_portfolio(monthly_savings: float, years: int, start_year: int = 2004, start_month: int = 1) -> pl.DataFrame:
     assert 1 <= years <= 20
     months = years * 12
     prices = _prices(start_year, start_month, months)
@@ -78,6 +79,7 @@ def simulate_austrian_portfolio(monthly_savings: float, years: int, start_year: 
     safe_from_tax = 0.0
 
     cash_in_hand_history = []
+    dates = []
     current_date = datetime.date(start_year, start_month, 1)
 
     for price in prices:
@@ -86,6 +88,7 @@ def simulate_austrian_portfolio(monthly_savings: float, years: int, start_year: 
         safe_from_tax += monthly_savings
 
         # advance time
+        dates.append(current_date)
         current_date += relativedelta(months=1)
 
         # annual tax event in january
@@ -107,8 +110,52 @@ def simulate_austrian_portfolio(monthly_savings: float, years: int, start_year: 
         net_cash_in_hand = gross_value - exit_tax - paid_tax
         cash_in_hand_history.append(net_cash_in_hand)
 
-    return cash_in_hand_history
+    return pl.DataFrame({"date": dates, "cash_in_hand": cash_in_hand_history})
 
 
-results = simulate_austrian_portfolio(monthly_savings=2000, years=20)
-print(results)
+def plot_portfolio(df: pl.DataFrame):
+    first_row = df.head(1)
+    last_row = df.tail(1)
+
+    p = (
+        ggplot(df, aes(x="date", y="cash_in_hand"))
+        + geom_line(color="#2c3e50", size=1)
+        + geom_text(
+            first_row,
+            aes(label="cash_in_hand"),
+            va="bottom",
+            ha="center",
+            size=10,
+            format_string="{:,.0f}€",
+            nudge_y=20000,
+        )
+        + geom_text(
+            last_row,
+            aes(label="cash_in_hand"),
+            va="bottom",
+            ha="center",
+            size=10,
+            format_string="{:,.0f}€",
+            nudge_y=20000,
+        )
+        + theme_minimal()
+        + labs(
+            title="FTSE All-World Portfolio Value Over Time",
+            subtitle="Excluding capital gains tax and transaction costs",
+            x="Date",
+            y="Net Cash in Hand (EUR)",
+        )
+        + theme(
+            figure_size=(10, 6),
+            axis_text_x=element_text(rotation=45, hjust=1),
+            plot_title=element_text(size=16, weight="bold"),
+        )
+        + scale_y_continuous(labels=lambda label: [f"{x:,.0f}€" for x in label])
+        + scale_x_date(expand=(0.1, 0.1))
+    )
+    p.show()
+
+
+if __name__ == "__main__":
+    results_df = simulate_portfolio(monthly_savings=2000, years=20)
+    plot_portfolio(results_df)
