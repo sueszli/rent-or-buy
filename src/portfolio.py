@@ -104,6 +104,7 @@ def simulate_portfolio(monthly_savings: float, years: int, start_year: int = 200
             safe_from_tax += national_tax_refund
 
         # assume we would liquidate today
+        # = final broker payout minus previously paid out-of-pocket annual taxes (sunk costs)
         gross_value = total_shares * _sell_price(price)
         profit = gross_value - safe_from_tax
         exit_tax = profit * KEST if profit > 0 else 0.0
