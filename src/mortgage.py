@@ -35,10 +35,11 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     assert 0 <= purchase_price
     assert 0 <= cash_savings
 
-    LOAN_TO_COLlATERAL_RATIO = 0.90
-    min_down = purchase_price * (1 - LOAN_TO_COLlATERAL_RATIO)
+    LOAN_TO_COLlATERAL_RATIO = 0.90  # KIM-VO regulation
+    min_down = purchase_price * 0.10
 
     # initial assumption for mortgage
+    # so we can deduct upfront costs from cash savings
     assumed_mortgage = purchase_price * LOAN_TO_COLlATERAL_RATIO
     upfront = _upfront_costs(purchase_price, assumed_mortgage)
     available_down = cash_savings - upfront
@@ -46,7 +47,7 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
         raise ValueError("cash savings insufficient for minimum down payment and costs")
     mortgage = purchase_price - available_down
 
-    # iterate once for better accuracy
+    # check again
     upfront = _upfront_costs(purchase_price, mortgage)
     available_down = cash_savings - upfront
     if available_down < min_down:
