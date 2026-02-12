@@ -8,3 +8,6 @@ home:
 - initial costs
 - incurring costs: mortgage, maintenance, taxes, insurance, utilities, opportunity cost of down payment, depreciation, renovation cost, property tax, etc.
 
+renting:
+
+- increasing rents
