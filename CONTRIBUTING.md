@@ -12,8 +12,7 @@ Quality:
 
 Correctness:
 
-- Contract based testing: use the `deal` library to specify contracts for each function. Prefer `deal.pure` functions.
-- Use assert statements for simple checks.
+- In each function, use at least 3 assert statements for preconditions, postconditions and invariants. This serves as both documentation and runtime checks.
 
 Dependency Management:
 

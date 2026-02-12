@@ -1,12 +1,8 @@
 from enum import Enum
 
-import deal
 
-
-@deal.pure
-@deal.pre(lambda gross_special_payments: 0 <= gross_special_payments < 1e12)
-@deal.ensure(lambda gross_special_payments, result, **_: 0 <= result <= gross_special_payments + 0.01)
 def _net_special(gross_special_payments: float) -> float:
+    assert 0 <= gross_special_payments < 1e12
     # social insurance
     sv_base = min(gross_special_payments, 12900.00)  # höchstbeitragsgrundlage sonderzahlungen, ASVG §108
     social_insurance = round(sv_base * 0.1707, 2)  # spacial payments rate
@@ -20,13 +16,13 @@ def _net_special(gross_special_payments: float) -> float:
 
     net_salary = gross_special_payments - social_insurance - income_tax
 
-    return round(net_salary, 2)
+    result = round(net_salary, 2)
+    assert 0 <= result <= gross_special_payments + 0.01
+    return result
 
 
-@deal.pure
-@deal.pre(lambda taxable_income: 0 <= taxable_income < 1e12)
-@deal.post(lambda r: r >= 0)
 def _tax_monthly(taxable_income: float) -> float:
+    assert 0 <= taxable_income < 1e12
     tax_brackets = [
         (1037.33, 0.00),
         (1620.67, 0.20),
@@ -54,13 +50,13 @@ def _tax_monthly(taxable_income: float) -> float:
 
     # estimated tax deductibles, arbeitnehmerabsetzbetrag/berkehrsabsetzbetrag, EStG § 33
     income_tax = max(0.00, income_tax - 104.63)
-    return round(income_tax, 2)
+    result = round(income_tax, 2)
+    assert result >= 0
+    return result
 
 
-@deal.pure
-@deal.pre(lambda gross_salary_monthly: 0 <= gross_salary_monthly < 1e12)
-@deal.ensure(lambda gross_salary_monthly, result, **_: 0 <= result <= gross_salary_monthly + 0.01)
 def _net_running(gross_salary_monthly: float) -> float:
+    assert 0 <= gross_salary_monthly < 1e12
     gross = gross_salary_monthly
 
     # social insurance
@@ -72,14 +68,13 @@ def _net_running(gross_salary_monthly: float) -> float:
     taxable_income = gross - social_insurance
     income_tax = _tax_monthly(taxable_income)
     net_salary = gross - social_insurance - income_tax
+    result = round(net_salary, 2)
+    assert 0 <= result <= gross_salary_monthly + 0.01
+    return result
 
-    return round(net_salary, 2)
 
-
-@deal.pure
-@deal.pre(lambda annual_gross_salary: 0 <= annual_gross_salary < 1e13)
-@deal.post(lambda r: r >= 0)
 def _net_salary_annual(annual_gross_salary: float) -> float:
+    assert 0 <= annual_gross_salary < 1e13
     # based on: https://bruttonetto.arbeiterkammer.at/
     if annual_gross_salary <= 0:
         return 0
@@ -92,7 +87,9 @@ def _net_salary_annual(annual_gross_salary: float) -> float:
     gross_special_payments = 2 * gross_monthly_running
     net_special = _net_special(gross_special_payments)
 
-    return 12 * net_monthly + net_special
+    result = 12 * net_monthly + net_special
+    assert result >= 0
+    return result
 
 
 class IncomePercentile(Enum):
@@ -104,7 +101,6 @@ class IncomePercentile(Enum):
     pct_90th = 91_300
 
 
-@deal.pure
 def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool) -> float:
     cost_of_living = {
         # single person in vienna, 1bd apartment, not overly frugal or lavish
