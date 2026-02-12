@@ -3,7 +3,6 @@ import pathlib
 
 import polars as pl
 
-DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
 
 # dividends
 # - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80
@@ -26,9 +25,11 @@ def _sell_price(price: float) -> float:
 
 
 def _prices(start_year: int, start_month: int, months: int) -> list[float]:
+    datapath = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
+
     assert 1 <= start_month <= 12
     assert 2003 <= start_year <= 2024
-    df = pl.read_csv(DATA_PATH).select(pl.col("Date").str.to_date("%m/%Y"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
+    df = pl.read_csv(datapath).select(pl.col("Date").str.to_date("%m/%Y"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
     start_date = datetime.date(start_year, start_month, 1)
     baseline_date = (start_date - datetime.timedelta(days=1)).replace(day=1)  # to access prices[t-1] later
     prices_df = df.filter(pl.col("Date") >= baseline_date).head(months + 1)
