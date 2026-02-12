@@ -1,21 +1,10 @@
 import datetime
 import pathlib
+from enum import Enum
 
 import polars as pl
 from dateutil.relativedelta import relativedelta
 from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scale_x_date, scale_y_continuous, theme, theme_minimal
-
-# product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
-#
-# - equity ETF that tracks the entire world stock market.
-# - most "neutral" portfolio possible. dilutes US exposure.
-# - must invest at least 10 years to pay off
-
-# based on:
-# - https://curvo.eu/backtest/en
-# - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80 (missing lots of data)
-# - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
-# - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf (no fees on flatex)
 
 
 def _prices_vanguard(months: int, start_year: int, start_month: int) -> list[float]:
@@ -60,11 +49,28 @@ def _annual_tax_vanguard(year: int, total_shares: float, current_price: float) -
     return hypothetical_dividends, foreign_tax_credit, cost_basis_adjustment
 
 
+class Products(Enum):
+    """
+    Product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
+    - most "neutral" equity ETF possible. tracks entire world. dilutes US exposure.
+    - must invest at least 10 years to pay off
+
+    Data sources:
+    - https://curvo.eu/backtest/en
+    - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80 (missing lots of data)
+    - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
+    - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf (no fees on flatex)
+    """
+
+    VANGUARD_ALL_WORLD = (_prices_vanguard, _annual_tax_vanguard)
+
+
 def simulate_portfolio(
     monthly_savings: float,
     years: int = 20,
     start_month: int = 1,
     start_year: int = 2004,
+    product: Products = Products.VANGUARD_ALL_WORLD,
 ) -> pl.DataFrame:
     SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
     KEST = 0.275  # kapital ertragssteuer
@@ -75,8 +81,10 @@ def simulate_portfolio(
     def _sell_price(price: float) -> float:
         return price * (1 - SPREAD_HALF)
 
+    _prices, _annual_tax = product.value
+
     months = years * 12
-    prices = _prices_vanguard(months, start_month, start_year)
+    prices = _prices(months, start_month, start_year)
 
     total_shares = 0.0
     safe_from_tax = 0.0
@@ -97,7 +105,7 @@ def simulate_portfolio(
         # annual tax event in january
         if current_date.month == 1:
             tax_year = current_date.year - 1
-            hypothetical_dividends, foreign_tax_refund, national_tax_refund = _annual_tax_vanguard(tax_year, total_shares, price)
+            hypothetical_dividends, foreign_tax_refund, national_tax_refund = _annual_tax(tax_year, total_shares, price)
 
             # sell shares to pay tax. models opportunity cost
             tax_due = max(0.0, hypothetical_dividends * KEST - foreign_tax_refund)
