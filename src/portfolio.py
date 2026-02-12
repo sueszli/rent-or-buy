@@ -3,7 +3,18 @@ import pathlib
 
 import polars as pl
 from dateutil.relativedelta import relativedelta
-from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scale_x_date, scale_y_continuous, theme, theme_minimal
+from plotnine import (
+    aes,
+    element_text,
+    geom_line,
+    geom_text,
+    ggplot,
+    labs,
+    scale_y_continuous,
+    scale_x_date,
+    theme,
+    theme_minimal,
+)
 
 # product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
 #
