@@ -69,7 +69,7 @@ def _prices(start_year: int, start_month: int, months: int) -> list[float]:
 
 
 def simulate_portfolio(monthly_savings: float, years: int = 20, start_year: int = 2004, start_month: int = 1) -> pl.DataFrame:
-    assert 1 <= years <= 20
+    assert 1 <= years <= 20 # new product, not that much historic data available
     months = years * 12
     prices = _prices(start_year, start_month, months)
 
