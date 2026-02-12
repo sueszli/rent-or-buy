@@ -4,6 +4,7 @@ import deal
 import polars as pl
 
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
+TER_VANGUARD = 0.19  # from: https://www.justetf.com/en/etf-profile.html?isin=IE00B3RBWM25
 TAX_RATE = 0.275  # kapital ertragsteuer KESt
 AG_E_YIELD = 0.0  # Annual yield of "Ausschüttungsgleiche Erträge" (AgE)
 
