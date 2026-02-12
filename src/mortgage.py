@@ -29,15 +29,17 @@ def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
 def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     """
     how much we need to borrow
+
+    - https://www.fma.gv.at/en/banks/residential-real-estate-lending/
     """
     assert 0 <= purchase_price
     assert 0 <= cash_savings
 
-    MIN_DOWN_PAYMENT_RATIO = 0.20
-    min_down = purchase_price * MIN_DOWN_PAYMENT_RATIO
+    LOAN_TO_COLlATERAL_RATIO = 0.90
+    min_down = purchase_price * (1 - LOAN_TO_COLlATERAL_RATIO)
 
     # initial assumption for mortgage
-    assumed_mortgage = purchase_price * (1 - MIN_DOWN_PAYMENT_RATIO)
+    assumed_mortgage = purchase_price * (1 - LOAN_TO_COLlATERAL_RATIO)
     upfront = _upfront_costs(purchase_price, assumed_mortgage)
     available_down = cash_savings - upfront
     if available_down < min_down:
