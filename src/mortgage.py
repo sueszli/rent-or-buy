@@ -1,9 +1,6 @@
 #
-# !!! WORK IN PROGRESS !!!
-#
 # use erste bank calculator as a reference
 #
-
 
 TRANSFER_TAX_RATE = 0.035
 NOTARY_RATE = 0.024  # 2% + 20% VAT ≈ 2.4%
@@ -194,13 +191,13 @@ def _simulate_payoff_years(
 
 
 def estimate_mortgage_payoff_years(
-    annual_savings: float,
-    purchase_price: float = 500_000.0,
+    monthly_savings: float,
     cash_savings: float = 200_000.0,
+    purchase_price: float = 500_000.0,
 ) -> float:
-    monthly_savings = annual_savings / 12.0
-    if purchase_price <= 0 or cash_savings < 0 or monthly_savings <= 0:
-        return float("inf")
+    assert monthly_savings > 0
+    assert cash_savings >= 0
+    assert purchase_price > 0
 
     # could we buy outright?
     cash_upfront = _upfront_costs(purchase_price, 0.0)
