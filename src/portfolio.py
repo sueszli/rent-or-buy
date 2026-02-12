@@ -73,8 +73,6 @@ def simulate_austrian_portfolio(
     start_month: int,
     months: int,
 ) -> list[float]:
-    monthly_savings -= TRANSACTION_FEE
-
     prices = _prices(start_year, start_month, months)
 
     total_shares = 0.0
