@@ -81,7 +81,7 @@ TYPICAL_PRICE_FOR_COSTS = 500000.0
 TYPICAL_APARTMENT_SIZE_M2 = 80.0
 
 
-def _monthly_ownership_costs(purchase_price: float) -> float:
+def _monthly_ownership_costs() -> float:
     """
     property maintenance, regardless of mortgage
 
@@ -96,22 +96,10 @@ def _monthly_ownership_costs(purchase_price: float) -> float:
 
     INSURANCE_MONTHLY = 20.0  # typical household insurance
     PROPERTY_TAX_MONTHLY = 15.0  # estimate (grundsteuer is very low)
-
     operating_costs = 2.75 * TYPICAL_APARTMENT_SIZE_M2
     maintenance_reserve = 1.12 * TYPICAL_APARTMENT_SIZE_M2
-
     utilities = 3.00 * TYPICAL_APARTMENT_SIZE_M2  # heat/elec combined
-
     return operating_costs + maintenance_reserve + PROPERTY_TAX_MONTHLY + INSURANCE_MONTHLY + utilities
-
-    scale_factor = purchase_price / TYPICAL_PRICE_FOR_COSTS
-    apartment_size = TYPICAL_APARTMENT_SIZE_M2 * scale_factor
-    operating_costs = 4.0 * apartment_size  # €4/m² average
-    maintenance_reserve = 1.06 * apartment_size  # €1.06/m² mandatory
-    property_tax = 100.0 * scale_factor  # €80-120 typical, scaled
-    insurance = 45.0 * scale_factor  # €35-60 average, scaled
-    utilities = 250.0 * scale_factor  # €200-300 average, scaled
-    return operating_costs + maintenance_reserve + property_tax + insurance + utilities
 
 
 def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) -> float:
@@ -260,7 +248,7 @@ def estimate_mortgage_payoff_years(
         down_payment = cash_savings - upfront
         down_payment_ratio = down_payment / purchase_price
         annual_interest_rate = _interest_rate(down_payment_ratio)
-        monthly_ownership_costs = _monthly_ownership_costs(purchase_price)
+        monthly_ownership_costs = _monthly_ownership_costs()
         payoff_years, total_interest = _simulate_payoff_years(
             mortgage_amount,
             annual_interest_rate,
