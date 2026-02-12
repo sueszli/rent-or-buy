@@ -3,12 +3,13 @@ import pathlib
 
 import polars as pl
 
+
 # product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
-#
+# 
 # - equity ETF that tracks the entire world stock market.
 # - most "neutral" portfolio possible. dilutes US exposure.
 # - must invest at least 10 years to pay off
-#
+# 
 # based on:
 # - https://curvo.eu/backtest/en
 # - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80
