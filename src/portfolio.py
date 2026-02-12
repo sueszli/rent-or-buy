@@ -15,10 +15,10 @@ from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scal
 # - https://curvo.eu/backtest/en
 # - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80 (missing lots of data)
 # - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
-# - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf (no transaction fees, custody fees for flatex premium etfs)
+# - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf (no fees on flatex)
 
 
-def _prices(months: int, start_year: int, start_month: int) -> list[float]:
+def _prices_vanguard(months: int, start_year: int, start_month: int) -> list[float]:
     # data also embeds TER
     datapath = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
     assert 1 * 12 <= months <= 20 * 12  # not much data available
@@ -33,7 +33,7 @@ def _prices(months: int, start_year: int, start_month: int) -> list[float]:
     return prices
 
 
-def _annual_tax(year: int, total_shares: float, current_price: float) -> tuple[float, float, float]:
+def _annual_tax_vanguard(year: int, total_shares: float, current_price: float) -> tuple[float, float, float]:
     # estimated year to (AgE, Korrektur, foreign) per share in EUR
     oegk_data = {
         2019: (0.4, 0.32, 0.04),
@@ -60,7 +60,12 @@ def _annual_tax(year: int, total_shares: float, current_price: float) -> tuple[f
     return hypothetical_dividends, foreign_tax_credit, cost_basis_adjustment
 
 
-def simulate_portfolio(monthly_savings: float, years: int = 20, start_month: int = 1, start_year: int = 2004) -> pl.DataFrame:
+def simulate_portfolio(
+    monthly_savings: float,
+    years: int = 20,
+    start_month: int = 1,
+    start_year: int = 2004,
+) -> pl.DataFrame:
     SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
     KEST = 0.275  # kapital ertragssteuer
 
@@ -71,7 +76,7 @@ def simulate_portfolio(monthly_savings: float, years: int = 20, start_month: int
         return price * (1 - SPREAD_HALF)
 
     months = years * 12
-    prices = _prices(months, start_month, start_year)
+    prices = _prices_vanguard(months, start_month, start_year)
 
     total_shares = 0.0
     safe_from_tax = 0.0
@@ -92,7 +97,7 @@ def simulate_portfolio(monthly_savings: float, years: int = 20, start_month: int
         # annual tax event in january
         if current_date.month == 1:
             tax_year = current_date.year - 1
-            hypothetical_dividends, foreign_tax_refund, national_tax_refund = _annual_tax(tax_year, total_shares, price)
+            hypothetical_dividends, foreign_tax_refund, national_tax_refund = _annual_tax_vanguard(tax_year, total_shares, price)
 
             # sell shares to pay tax. models opportunity cost
             tax_due = max(0.0, hypothetical_dividends * KEST - foreign_tax_refund)
