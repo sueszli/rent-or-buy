@@ -30,13 +30,13 @@ def simulate_portfolio(
 ) -> list[float]:
     df = pl.read_csv(DATA_PATH).select(pl.col("Date").str.to_date("%m/%Y"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
     start_date = datetime.date(start_year, start_month, 1)
-    baseline_date = (start_date - datetime.timedelta(days=1)).replace(day=1) # to access prices[t-1] later
+    baseline_date = (start_date - datetime.timedelta(days=1)).replace(day=1)  # to access prices[t-1] later
     prices_df = df.filter(pl.col("Date") >= baseline_date).head(months + 1)
     prices = prices_df["price"].to_list()
     assert len(prices) == months + 1, "insufficient price data"
 
     portfolio_values = [initial_investment] + ([0.0] * months)
-    cost_basis = [initial_investment] + ([0.0] * months) # also includes dividends that have been reinvested (ag_e_gross)
+    cost_basis = [initial_investment] + ([0.0] * months)  # also includes dividends that have been reinvested (ag_e_gross)
 
     for t in range(1, months + 1):
         price_prev = prices[t - 1]
