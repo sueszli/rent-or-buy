@@ -7,18 +7,14 @@ DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
 
 # dividends
 # - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80
-MONTHLY_YIELD = 0.015 / 12  # the "ausschüttungsgleiche erträge AgE" tax doesn't care if dividends were distributed or reinvested
+MONTHLY_YIELD = 0.015 / 12  # tax on dividends, even if reinvested (ausschüttungsgleiche erträge, AgE)
 
 # costs
 # - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
 # - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf
 TRANSACTION_FEE = 0.0  # per trade. premium etf
-TER = 0.0019
 SPREAD_HALF = 0.0012 / 2
-
-
-# tax
-KEST = 0.275  # monthly. on gains. (kapital ertragsteuer)
+KEST = 0.275  # tax on gains. (kapital ertragsteuer)
 
 
 def _buy_price(price: float) -> float:
