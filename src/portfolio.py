@@ -3,14 +3,18 @@ import pathlib
 
 import polars as pl
 
-
-# dividends
+# product: Vanguard FTSE All-World UCITS ETF (USD) Accumulating (IE00BK5BQT80)
+#
+# - equity ETF that tracks the entire world stock market.
+# - most "neutral" portfolio possible. dilutes US exposure.
+# - must invest at least 10 years to pay off
+#
+# based on:
+# - https://curvo.eu/backtest/en
 # - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80
-MONTHLY_YIELD = 0.015 / 12  # tax on dividends, even if reinvested (ausschüttungsgleiche erträge, AgE)
-
-# costs
 # - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
 # - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf
+MONTHLY_YIELD = 0.015 / 12  # tax on dividends, even if reinvested (ausschüttungsgleiche erträge, AgE)
 TRANSACTION_FEE = 0.0  # per trade. premium etf
 SPREAD_HALF = 0.0012 / 2
 KEST = 0.275  # tax on gains. (kapital ertragsteuer)
