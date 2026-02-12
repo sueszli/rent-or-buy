@@ -68,7 +68,7 @@ def _prices(start_year: int, start_month: int, months: int) -> list[float]:
     return prices
 
 
-def simulate_portfolio(monthly_savings: float, years: int, start_year: int = 2004, start_month: int = 1) -> pl.DataFrame:
+def simulate_portfolio(monthly_savings: float, years: int = 20, start_year: int = 2004, start_month: int = 1) -> pl.DataFrame:
     assert 1 <= years <= 20
     months = years * 12
     prices = _prices(start_year, start_month, months)
@@ -155,8 +155,3 @@ def plot_portfolio(df: pl.DataFrame):
         + scale_x_date(expand=(0.1, 0.1))
     )
     p.show()
-
-
-if __name__ == "__main__":
-    results_df = simulate_portfolio(monthly_savings=2000, years=20)
-    plot_portfolio(results_df)
