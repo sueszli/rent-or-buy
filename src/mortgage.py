@@ -2,7 +2,9 @@
 
 
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
-    # initial costs in addition to the minimum down payment
+    """
+    initial costs in addition to the minimum down payment
+    """
 
     assert 0 <= purchase_price <= 1e9
     assert 0 <= mortgage_amount <= 1e9
@@ -41,9 +43,12 @@ def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
 
 
 def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
+    """
+    how much we need to borrow
+    """
+
     MIN_DOWN_PAYMENT_RATIO = 0.20
 
-    # how much we need to borrow
     if purchase_price <= 0 or cash_savings <= 0:
         return 0.0
     min_down = purchase_price * MIN_DOWN_PAYMENT_RATIO
@@ -67,9 +72,12 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
 
 
 def _interest_rate(down_payment_ratio: float) -> float:
+    """
+    interest rate is better with higher down payment
+    """
+
     BASE_INTEREST_RATE = 0.034
 
-    # interest rate is better with higher down payment
     if down_payment_ratio >= 0.40:
         return BASE_INTEREST_RATE - 0.005
     elif down_payment_ratio >= 0.30:
@@ -85,8 +93,11 @@ TYPICAL_APARTMENT_SIZE_M2 = 80.0
 
 
 def _monthly_ownership_costs(purchase_price: float) -> float:
+    """
+    property maintenance, regardless of mortgage
+    """
+
     assert 1000.0 <= purchase_price < 1e10
-    # property maintenance, regardless of mortgage
     scale_factor = purchase_price / TYPICAL_PRICE_FOR_COSTS
     apartment_size = TYPICAL_APARTMENT_SIZE_M2 * scale_factor
     operating_costs = 4.0 * apartment_size  # €4/m² average
@@ -98,12 +109,16 @@ def _monthly_ownership_costs(purchase_price: float) -> float:
 
 
 def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) -> float:
+    """
+    how much to pay monthly to pay off the loan in given years
+
+    formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
+    where M = monthly payment, P = principal, r = monthly rate, n = number of payments
+    """
+
     assert 0 < principal <= 1e9
     assert 0 <= annual_rate <= 1.0
     assert 0 < years <= 100
-    # how much to pay monthly to pay off the loan in given years
-    #
-    # formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
     # where M = monthly payment, P = principal, r = monthly rate, n = number of payments
     if annual_rate <= 1e-9:
         return principal / (years * 12)
@@ -119,12 +134,15 @@ def _simulate_payoff_years(
     monthly_savings: float,
     monthly_ownership_costs: float,
 ) -> tuple[float, float]:
+    """
+    simulate month-by-month payoff considering prepayment rules and 10-year option to fully pay off with notice
+    returns (years, total_interest_paid)
+    """
+
     STANDARD_TERM_YEARS = 25
     ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
     NOTICE_MONTHS_FOR_PREPAY = 6
 
-    # simulate month-by-month payoff considering prepayment rules and 10-year option to fully pay off with notice
-    # returns (years, total_interest_paid)
     if mortgage_amount <= 0:
         return 0.0, 0.0
 
@@ -197,6 +215,10 @@ def estimate_mortgage_payoff_years(
     cash_savings: float = 200_000.0,
     purchase_price: float = 500_000.0,
 ) -> float:
+    """
+    estimate how many years it takes to pay off a mortgage
+    """
+
     RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
 
     assert monthly_savings > 0
