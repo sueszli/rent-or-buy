@@ -1,6 +1,3 @@
-# TODO: use erste bank calculator as a reference
-
-
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
     """
     initial costs in addition to the minimum down payment
