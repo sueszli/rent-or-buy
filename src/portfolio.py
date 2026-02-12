@@ -1,3 +1,4 @@
+import datetime
 import pathlib
 
 import deal
@@ -27,17 +28,15 @@ def simulate_portfolio(
     months: int,
     initial_investment: float = 0.0,
 ) -> list[float]:
-    df = pl.read_csv(DATA_PATH).select(pl.col("Date"), pl.col("^Vanguard.*$").alias("price"))
-    start_idx = df.select(pl.arg_where(pl.col("Date") == f"{start_month:02d}/{start_year}")).item(0, 0)
-    print(f"{start_month:02d}/{start_year}")
-    prices = df.slice(start_idx, months + 1)["price"].to_list()
-    assert len(prices) == months + 1
+    df = pl.read_csv(DATA_PATH).select(pl.col("Date").str.to_date("%m/%Y"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
+    start_date = datetime.date(start_year, start_month, 1)
+    baseline_date = (start_date - datetime.timedelta(days=1)).replace(day=1) # to access prices[t-1] later
+    prices_df = df.filter(pl.col("Date") >= baseline_date).head(months + 1)
+    prices = prices_df["price"].to_list()
+    assert len(prices) == months + 1, "insufficient price data"
 
     portfolio_values = [initial_investment] + ([0.0] * months)
-    cost_basis = [initial_investment] + ([0.0] * months)
-
-    print(months + 1)
-    print(prices)
+    cost_basis = [initial_investment] + ([0.0] * months) # also includes dividends that have been reinvested (ag_e_gross)
 
     for t in range(1, months + 1):
         price_prev = prices[t - 1]
@@ -70,5 +69,7 @@ def simulate_portfolio(
     # This represents the "cash in hand" value if the portfolio were sold at time t.
     return [val - max(0.0, val - basis) * KEST for val, basis in zip(portfolio_values, cost_basis)]
 
-r = simulate_portfolio(monthly_savings=1000, start_year=2020, start_month=1, months=4)
-print(r)
+
+if __name__ == "__main__":
+    r = simulate_portfolio(monthly_savings=1000, start_year=2020, start_month=1, months=4)
+    print(r)
