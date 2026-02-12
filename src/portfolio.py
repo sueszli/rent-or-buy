@@ -4,9 +4,15 @@ import deal
 import polars as pl
 
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
-TER_VANGUARD = 0.19  # from: https://www.justetf.com/en/etf-profile.html?isin=IE00B3RBWM25
-TAX_RATE = 0.275  # kapital ertragsteuer KESt
-AG_E_YIELD = 0.0  # Annual yield of "Ausschüttungsgleiche Erträge" (AgE)
+
+# costs
+TRANSACTION_FEE = 0.0  # per trade. premium etf. see: https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf
+SPREAD = 1.0005  # per trade (this is for buying. for selling, subtract from 1)
+TER = 0.0019  # annually. see: https://www.justetf.com/en/etf-profile.html?isin=IE00B3RBWM25
+
+# tax
+KEST = 0.275  # monthly. on gains. (kapital ertragsteuer)
+AGE_YIELD = 0.0  # annual (jan/feb). on dividends. (ausschüttungsgleiche erträge)
 
 
 @deal.pre(lambda start_month, **_: 1 <= start_month <= 12)
@@ -46,10 +52,10 @@ def simulate_portfolio(
         # 2. Simulate Tax Drag (AgE)
         # Yield is provided as an annual figure, so we smooth it over 12 months.
         # ag_e_gross: The theoretical dividend amount accumulated this month.
-        ag_e_gross = portfolio_values[t - 1] * (AG_E_YIELD / 12)
+        ag_e_gross = portfolio_values[t - 1] * (AGE_YIELD / 12)
 
         # ag_e_tax: The actual tax bill the investor must pay.
-        ag_e_tax = ag_e_gross * TAX_RATE
+        ag_e_tax = ag_e_gross * KEST
 
         # 3. Determine Net Investment
         # Investor aims to save `monthly_savings`, but must first pay the tax bill.
@@ -65,4 +71,4 @@ def simulate_portfolio(
 
     # Calculate net value (after hypothetical liquidation tax)
     # This represents the "cash in hand" value if the portfolio were sold at time t.
-    return [val - max(0.0, val - basis) * TAX_RATE for val, basis in zip(portfolio_values, cost_basis)]
+    return [val - max(0.0, val - basis) * KEST for val, basis in zip(portfolio_values, cost_basis)]
