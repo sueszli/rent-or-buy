@@ -67,12 +67,7 @@ def _prices(start_year: int, start_month: int, months: int) -> list[float]:
     return prices
 
 
-def simulate_austrian_portfolio(
-    monthly_savings: float,
-    start_year: int,
-    start_month: int,
-    months: int,
-) -> list[float]:
+def simulate_austrian_portfolio(monthly_savings: float, start_year: int, start_month: int, months: int) -> list[float]:
     prices = _prices(start_year, start_month, months)
 
     total_shares = 0.0
