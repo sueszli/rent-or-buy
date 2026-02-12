@@ -14,10 +14,9 @@ from dateutil.relativedelta import relativedelta
 # - https://curvo.eu/backtest/en
 # - https://my.oekb.at/kapitalmarkt-services/kms-output/fonds-info/sd/af/f?isin=IE00BK5BQT80 (missing lots of data)
 # - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
-# - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf
+# - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf (no transaction fees for flatex premium etfs)
 
 SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
-TRANSACTION_FEE = 0.0  # flatex premium
 KEST = 0.275  # kapital ertragssteuer
 
 
@@ -87,6 +86,7 @@ def simulate_austrian_portfolio(
     current_date = datetime.date(start_year, start_month, 1)
 
     for price in prices:
+        # buy shares
         total_shares += monthly_savings / _buy_price(price)
         safe_from_tax += monthly_savings
 
