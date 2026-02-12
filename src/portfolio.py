@@ -74,46 +74,43 @@ def simulate_austrian_portfolio(
     start_month: int,
     months: int,
 ) -> list[float]:
+    monthly_savings -= TRANSACTION_FEE
+
     prices = _prices(start_year, start_month, months)
 
     total_shares = 0.0
-    tax_basis = 0.0
-    cumulative_tax_paid = 0.0
-    cash_in_hand_history = []
 
+    paid_tax = 0.0
+    safe_from_tax = 0.0
+
+    cash_in_hand_history = []
     current_date = datetime.date(start_year, start_month, 1)
 
     for price in prices:
-        # monthly buy
         total_shares += monthly_savings / _buy_price(price)
-        tax_basis += monthly_savings
+        safe_from_tax += monthly_savings
 
         # advance time
         current_date += relativedelta(months=1)
 
-        # annual age tax event (january)
+        # annual tax event in january
         if current_date.month == 1:
-            # pay tax for the previous year
             tax_year = current_date.year - 1
             age, korrektur, foreign = _annual_tax_data(tax_year, price)
 
-            # apply to portfolio
-            total_age = age * total_shares
-            total_foreign = foreign * total_shares
-            total_basis_up = korrektur * total_shares
+            hypothetical_dividends = total_shares * age
+            foreign_tax_refund = total_shares * foreign
+            national_tax_refund = total_shares * korrektur
 
-            # you owe 27.5% on AgE, but can deduct foreign tax paid
-            net_kest_due = max(0.0, total_age * KEST - total_foreign)
+            paid_tax += max(0.0, hypothetical_dividends * KEST - foreign_tax_refund)
+            safe_from_tax += national_tax_refund
 
-            cumulative_tax_paid += net_kest_due
-            tax_basis += total_basis_up
-
-        # hypothetical liquidation
+        # assume we would liquidate today
         gross_value = total_shares * _sell_price(price)
-        profit = gross_value - tax_basis
+        profit = gross_value - safe_from_tax
         exit_tax = profit * KEST if profit > 0 else 0.0
-        net_cash = gross_value - exit_tax - cumulative_tax_paid
-        cash_in_hand_history.append(net_cash)
+        net_cash_in_hand = gross_value - exit_tax - paid_tax
+        cash_in_hand_history.append(net_cash_in_hand)
 
     return cash_in_hand_history
 
