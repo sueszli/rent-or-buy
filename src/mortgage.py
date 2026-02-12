@@ -30,11 +30,10 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     """
     how much we need to borrow
     """
+    assert 0 <= purchase_price
+    assert 0 <= cash_savings
 
     MIN_DOWN_PAYMENT_RATIO = 0.20
-
-    if purchase_price <= 0 or cash_savings <= 0:
-        return 0.0
     min_down = purchase_price * MIN_DOWN_PAYMENT_RATIO
 
     # initial assumption for mortgage
@@ -230,8 +229,6 @@ def estimate_mortgage_payoff_years(
     try:
         # simulate mortgage payoff
         mortgage_amount = _mortgage_amount(purchase_price, cash_savings)
-        if mortgage_amount <= 0:
-            return float("inf")
         upfront = _upfront_costs(purchase_price, mortgage_amount)
         down_payment = cash_savings - upfront
         down_payment_ratio = down_payment / purchase_price
