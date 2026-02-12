@@ -39,7 +39,7 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     min_down = purchase_price * (1 - LOAN_TO_COLlATERAL_RATIO)
 
     # initial assumption for mortgage
-    assumed_mortgage = purchase_price * (1 - LOAN_TO_COLlATERAL_RATIO)
+    assumed_mortgage = purchase_price * LOAN_TO_COLlATERAL_RATIO
     upfront = _upfront_costs(purchase_price, assumed_mortgage)
     available_down = cash_savings - upfront
     if available_down < min_down:
