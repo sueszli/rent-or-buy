@@ -60,7 +60,7 @@ def _annual_tax(year: int, total_shares: float, current_price: float) -> tuple[f
         age_rate, step_up_rate, foreign_rate = oegk_data[year]
     else:
         # conservative estimate
-        age_rate = current_price * 0.015 # expect 1.5% dividend yield
+        age_rate = current_price * 0.015  # expect 1.5% dividend yield
         step_up_rate = age_rate * 0.81  # prevent double taxation simulation (weighted by historic avg)
         foreign_rate = age_rate * 0.1  # expect 10% of AgE to be creditable foreign tax
 
