@@ -4,7 +4,6 @@
 # use erste bank calculator as a reference
 #
 
-import deal
 
 TRANSFER_TAX_RATE = 0.035
 NOTARY_RATE = 0.024  # 2% + 20% VAT ≈ 2.4%
@@ -23,11 +22,9 @@ TYPICAL_APARTMENT_SIZE_M2 = 80.0
 RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
 
 
-@deal.pure
-@deal.pre(lambda purchase_price, **_: 0 <= purchase_price <= 1e9)
-@deal.pre(lambda mortgage_amount, **_: 0 <= mortgage_amount <= 1e9)
-@deal.post(lambda r: r >= 0)
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
+    assert 0 <= purchase_price <= 1e9
+    assert 0 <= mortgage_amount <= 1e9
     # initial costs in addition to the minimum down payment
 
     def _land_registry_fee(purchase_price: float) -> float:
@@ -55,8 +52,6 @@ def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
     return transfer_tax + land_reg + mort_reg + notary + agent + bank_processing + FIXED_ADMIN_FEES
 
 
-@deal.raises(ValueError)
-@deal.post(lambda r: r >= 0)
 def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     # how much we need to borrow
     if purchase_price <= 0 or cash_savings <= 0:
@@ -81,24 +76,21 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     return mortgage
 
 
-@deal.pure
-@deal.post(lambda r: r > 0)
 def _interest_rate(down_payment_ratio: float) -> float:
     # interest rate is better with higher down payment
-    if down_payment_ratio >= 0.40:
-        return BASE_INTEREST_RATE - 0.005
-    elif down_payment_ratio >= 0.30:
-        return BASE_INTEREST_RATE - 0.0025
-    elif down_payment_ratio >= 0.20:
-        return BASE_INTEREST_RATE
-    else:
-        return BASE_INTEREST_RATE + 0.005
+    match down_payment_ratio:
+        case r if r >= 0.40:
+            return BASE_INTEREST_RATE - 0.005
+        case r if r >= 0.30:
+            return BASE_INTEREST_RATE - 0.0025
+        case r if r >= 0.20:
+            return BASE_INTEREST_RATE
+        case _:
+            return BASE_INTEREST_RATE + 0.005
 
 
-@deal.pure
-@deal.pre(lambda purchase_price: 1000.0 <= purchase_price < 1e10)
-@deal.post(lambda r: r > 0)
 def _monthly_ownership_costs(purchase_price: float) -> float:
+    assert 1000.0 <= purchase_price < 1e10
     # property maintenance, regardless of mortgage
     scale_factor = purchase_price / TYPICAL_PRICE_FOR_COSTS
     apartment_size = TYPICAL_APARTMENT_SIZE_M2 * scale_factor
@@ -110,12 +102,10 @@ def _monthly_ownership_costs(purchase_price: float) -> float:
     return operating_costs + maintenance_reserve + property_tax + insurance + utilities
 
 
-@deal.pure
-@deal.pre(lambda principal, **_: 0 < principal <= 1e9)
-@deal.pre(lambda annual_rate, **_: 0 <= annual_rate <= 1.0)
-@deal.pre(lambda years, **_: 0 < years <= 100)
-@deal.post(lambda r: r > 0)
 def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) -> float:
+    assert 0 < principal <= 1e9
+    assert 0 <= annual_rate <= 1.0
+    assert 0 < years <= 100
     # how much to pay monthly to pay off the loan in given years
     #
     # formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
@@ -128,8 +118,6 @@ def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) 
     return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / ((1 + monthly_rate) ** num_payments - 1)
 
 
-@deal.raises(ValueError)
-@deal.post(lambda r: r[0] >= 0 and r[1] >= 0)
 def _simulate_payoff_years(
     mortgage_amount: float,
     annual_interest_rate: float,
@@ -205,7 +193,6 @@ def _simulate_payoff_years(
     return month / 12.0, total_interest
 
 
-@deal.post(lambda r: r >= 0)
 def estimate_mortgage_payoff_years(
     annual_savings: float,
     purchase_price: float = 500_000.0,

@@ -101,7 +101,7 @@ class IncomePercentile(Enum):
     pct_90th = 91_300
 
 
-def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool) -> float:
+def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool = False) -> float:
     cost_of_living = {
         # single person in vienna, 1bd apartment, not overly frugal or lavish
         # based on:

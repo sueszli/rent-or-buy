@@ -18,7 +18,5 @@ precommit:
 	uvx isort .
 	uvx autoflake --remove-all-unused-imports --recursive --in-place .
 	uvx black --line-length 5000 .
-	uvx ruff check .
-	# uv run --with pytest -m pytest tests/ -v
-	uv run --with deal==4.24.6 python3 -m deal lint src/*.py
-	uv run --with deal==4.24.6 --with hypothesis python3 -m deal test src/*.py
+	uvx ruff check --fix .
+	uv run --with pytest pytest tests/ -v

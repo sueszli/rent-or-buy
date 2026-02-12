@@ -1,7 +1,6 @@
 import datetime
 import pathlib
 
-import deal
 import polars as pl
 
 DATA_PATH = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
@@ -16,11 +15,6 @@ KEST = 0.275  # monthly. on gains. (kapital ertragsteuer)
 AGE_YIELD = 0.0  # annual (jan/feb). on dividends. (ausschüttungsgleiche erträge)
 
 
-@deal.pre(lambda start_month, **_: 1 <= start_month <= 12)
-@deal.pre(lambda start_year, **_: 1900 <= start_year <= 2100)
-@deal.pre(lambda months, **_: 0 <= months <= 1200)
-@deal.pre(lambda monthly_savings, **_: 0 <= monthly_savings <= 1e9)
-@deal.ensure(lambda months, result, **_: len(result) == months + 1)
 def simulate_portfolio(
     monthly_savings: float,
     start_year: int,
@@ -28,6 +22,11 @@ def simulate_portfolio(
     months: int,
     initial_investment: float = 0.0,
 ) -> list[float]:
+    assert 1 <= start_month <= 12
+    assert 1900 <= start_year <= 2100
+    assert 0 <= months <= 1200
+    assert 0 <= monthly_savings <= 1e9
+
     df = pl.read_csv(DATA_PATH).select(pl.col("Date").str.to_date("%m/%Y"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
     start_date = datetime.date(start_year, start_month, 1)
     baseline_date = (start_date - datetime.timedelta(days=1)).replace(day=1)  # to access prices[t-1] later
@@ -67,7 +66,9 @@ def simulate_portfolio(
 
     # Calculate net value (after hypothetical liquidation tax)
     # This represents the "cash in hand" value if the portfolio were sold at time t.
-    return [val - max(0.0, val - basis) * KEST for val, basis in zip(portfolio_values, cost_basis)]
+    result = [val - max(0.0, val - basis) * KEST for val, basis in zip(portfolio_values, cost_basis)]
+    assert len(result) == months + 1
+    return result
 
 
 if __name__ == "__main__":
