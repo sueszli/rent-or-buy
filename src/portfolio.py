@@ -17,17 +17,6 @@ from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scal
 # - https://www.justetf.com/en/etf-profile.html?isin=IE00BK5BQT80
 # - https://www.flatex.de/fileadmin/dateien_flatex/pdf/handel/gesamtliste_premium_etfs_de.pdf (no transaction fees, custody fees for flatex premium etfs)
 
-SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
-KEST = 0.275  # kapital ertragssteuer
-
-
-def _buy_price(price: float) -> float:
-    return price * (1 + SPREAD_HALF)
-
-
-def _sell_price(price: float) -> float:
-    return price * (1 - SPREAD_HALF)
-
 
 def _prices(months: int, start_year: int, start_month: int) -> list[float]:
     # data also embeds TER
@@ -72,6 +61,15 @@ def _annual_tax(year: int, total_shares: float, current_price: float) -> tuple[f
 
 
 def simulate_portfolio(monthly_savings: float, years: int = 20, start_month: int = 1, start_year: int = 2004) -> pl.DataFrame:
+    SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
+    KEST = 0.275  # kapital ertragssteuer
+
+    def _buy_price(price: float) -> float:
+        return price * (1 + SPREAD_HALF)
+
+    def _sell_price(price: float) -> float:
+        return price * (1 - SPREAD_HALF)
+
     months = years * 12
     prices = _prices(months, start_month, start_year)
 
