@@ -12,7 +12,7 @@ def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
 
     TRANSFER_TAX = 0.035 * purchase_price  # grunderwerbsteuer
     LAND_REGISTER_FEE = 0.011 * purchase_price + 81
-    MORTGAGE_REGISTRY_FEE = 0.012 * purchase_price
+    MORTGAGE_REGISTRY_FEE = 0.012 * mortgage_amount
     LAWYER_AND_NOTARY_FEE = 0.03 * purchase_price * VALUE_ADDED_TAX
 
     def agent_commission() -> float:
