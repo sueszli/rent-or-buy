@@ -2,9 +2,10 @@
 
 
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
+    # initial costs in addition to the minimum down payment
+
     assert 0 <= purchase_price <= 1e9
     assert 0 <= mortgage_amount <= 1e9
-    # initial costs in addition to the minimum down payment
 
     LAND_REGISTRY_RATE = 0.011
     MORTGAGE_REGISTRY_RATE = 0.012
