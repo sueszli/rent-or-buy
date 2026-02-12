@@ -105,7 +105,7 @@ def simulate_portfolio(
             safe_from_tax += national_tax_refund
 
             if tax_due > 0 and total_shares > 0:
-                shares_to_sell = tax_due / _sell_price(price)
+                shares_to_sell = tax_due / _sell_price(price)  # don't deduct KESt for simplicity
                 safe_from_tax *= 1.0 - (shares_to_sell / total_shares)
                 total_shares -= shares_to_sell
 
