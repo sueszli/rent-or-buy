@@ -43,6 +43,7 @@ def _sell_price(price: float) -> float:
 
 
 def _prices(start_year: int, start_month: int, months: int) -> list[float]:
+    # data also embeds TER
     datapath = pathlib.Path(__file__).parent.parent / "data" / "vwce-chart.csv"
 
     assert 1 <= start_month <= 12
