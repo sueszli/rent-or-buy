@@ -59,7 +59,7 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
 
 def _interest_rate(down_payment_ratio: float) -> float:
     """
-    interest rate is better with higher down payment
+    interest rate is better with higher down payment, better credit score
 
     - https://wien.arbeiterkammer.at/beratung/konsumentenschutz/geld/kredite/Hypothekarkredite_202501.pdf
     - https://www.oenb.at/en/Statistics/Charts/Chart-4.html
@@ -84,9 +84,26 @@ TYPICAL_APARTMENT_SIZE_M2 = 80.0
 def _monthly_ownership_costs(purchase_price: float) -> float:
     """
     property maintenance, regardless of mortgage
+
+    varies with energy efficiency, etc.
+
+    - https://www.statistik.at/statistiken/bevoelkerung-und-soziales/wohnen/wohnkosten
+    - https://www.ovi.at/aktuelles/detailansicht/anhebung-der-mindestruecklage-1-1-2026
+    - https://www.infina.at/ratgeber/steuern/grundsteuer-oesterreich/
+    - https://www.arbeiterkammer.at/haushaltsversicherungen
+    - https://www.stromrechner.at/stromverbrauch-haushalt
     """
 
-    assert 1000.0 <= purchase_price
+    INSURANCE_MONTHLY = 20.0  # typical household insurance
+    PROPERTY_TAX_MONTHLY = 15.0  # estimate (grundsteuer is very low)
+
+    operating_costs = 2.75 * TYPICAL_APARTMENT_SIZE_M2
+    maintenance_reserve = 1.12 * TYPICAL_APARTMENT_SIZE_M2
+
+    utilities = 3.00 * TYPICAL_APARTMENT_SIZE_M2  # heat/elec combined
+
+    return operating_costs + maintenance_reserve + PROPERTY_TAX_MONTHLY + INSURANCE_MONTHLY + utilities
+
     scale_factor = purchase_price / TYPICAL_PRICE_FOR_COSTS
     apartment_size = TYPICAL_APARTMENT_SIZE_M2 * scale_factor
     operating_costs = 4.0 * apartment_size  # €4/m² average
