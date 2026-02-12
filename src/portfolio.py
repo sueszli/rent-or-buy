@@ -29,19 +29,16 @@ def simulate_portfolio(
 ) -> list[float]:
     df = pl.read_csv(DATA_PATH).select(pl.col("Date"), pl.col("^Vanguard.*$").alias("price"))
     start_idx = df.select(pl.arg_where(pl.col("Date") == f"{start_month:02d}/{start_year}")).item(0, 0)
+    print(f"{start_month:02d}/{start_year}")
     prices = df.slice(start_idx, months + 1)["price"].to_list()
     assert len(prices) == months + 1
 
-    portfolio_values = [0.0] * (months + 1)
-    cost_basis = [0.0] * (months + 1)
+    portfolio_values = [initial_investment] + ([0.0] * months)
+    cost_basis = [initial_investment] + ([0.0] * months)
 
-    # t=0: Initial State
-    # We invest the initial lump sum immediately.
-    portfolio_values[0] = initial_investment
-    cost_basis[0] = initial_investment
+    print(months + 1)
+    print(prices)
 
-    # t=1 to t=months: Monthly Steps
-    # Simulation runs in NOMINAL terms to correctly apply tax logic
     for t in range(1, months + 1):
         price_prev = prices[t - 1]
         price_curr = prices[t]
@@ -72,3 +69,6 @@ def simulate_portfolio(
     # Calculate net value (after hypothetical liquidation tax)
     # This represents the "cash in hand" value if the portfolio were sold at time t.
     return [val - max(0.0, val - basis) * KEST for val, basis in zip(portfolio_values, cost_basis)]
+
+r = simulate_portfolio(monthly_savings=1000, start_year=2020, start_month=1, months=4)
+print(r)
