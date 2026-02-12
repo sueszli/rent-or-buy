@@ -4,42 +4,29 @@
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
     """
     initial costs in addition to the minimum down payment
+
+    - https://www.oesterreich.gv.at/en/themen/bauen_und_wohnen/wohnen/8/Seite.210150
+    - https://www.usp.gv.at/themen/steuern-finanzen/weitere-steuern-und-abgaben/grunderwerbsteuer.html
     """
+    assert 0 <= purchase_price
+    assert 0 <= mortgage_amount
 
-    assert 0 <= purchase_price <= 1e9
-    assert 0 <= mortgage_amount <= 1e9
+    VALUE_ADDED_TAX = 1.20
 
-    LAND_REGISTRY_RATE = 0.011
-    MORTGAGE_REGISTRY_RATE = 0.012
-    TRANSFER_TAX_RATE = 0.035
-    NOTARY_RATE = 0.024  # 2% + 20% VAT ≈ 2.4%
-    AGENT_RATE = 0.036  # 3% + 20% VAT = 3.6%
-    BANK_PROCESSING_RATE = 0.03
-    FIXED_ADMIN_FEES = 81 + 47  # land registry admin + electronic lien fees
+    TRANSFER_TAX = 0.035 * purchase_price  # grunderwerbsteuer
+    LAND_REGISTER_FEE = 0.011 * purchase_price + 81
+    MORTGAGE_REGISTRY_FEE = 0.012 * purchase_price
+    LAWYER_AND_NOTARY_FEE = 0.03 * purchase_price * VALUE_ADDED_TAX
 
-    def _land_registry_fee(purchase_price: float) -> float:
-        if purchase_price <= 500000.0:
-            return 0.0
-        elif purchase_price <= 2000000.0:
-            return (purchase_price - 500000.0) * LAND_REGISTRY_RATE
+    def agent_commission() -> float:
+        if purchase_price <= 36336.42:
+            return 0.04 * purchase_price * VALUE_ADDED_TAX
+        elif purchase_price <= 48448.51:
+            return 1453.46 * VALUE_ADDED_TAX
         else:
-            return purchase_price * LAND_REGISTRY_RATE
+            return 0.03 * purchase_price * VALUE_ADDED_TAX
 
-    def _mortgage_registration_fee(mortgage_amount: float) -> float:
-        if mortgage_amount <= 500000.0:
-            return 0.0
-        elif mortgage_amount <= 2000000.0:
-            return (mortgage_amount - 500000.0) * MORTGAGE_REGISTRY_RATE
-        else:
-            return mortgage_amount * MORTGAGE_REGISTRY_RATE
-
-    transfer_tax = TRANSFER_TAX_RATE * purchase_price
-    land_reg = _land_registry_fee(purchase_price)
-    mort_reg = _mortgage_registration_fee(mortgage_amount)
-    notary = NOTARY_RATE * purchase_price
-    agent = AGENT_RATE * purchase_price
-    bank_processing = BANK_PROCESSING_RATE * mortgage_amount
-    return transfer_tax + land_reg + mort_reg + notary + agent + bank_processing + FIXED_ADMIN_FEES
+    return TRANSFER_TAX + LAND_REGISTER_FEE + MORTGAGE_REGISTRY_FEE + LAWYER_AND_NOTARY_FEE + agent_commission()
 
 
 def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
