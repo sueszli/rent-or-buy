@@ -155,3 +155,6 @@ def plot_portfolio(df: pl.DataFrame):
         + scale_x_date(expand=(0.1, 0.1))
     )
     p.show()
+
+
+# plot_portfolio(simulate_portfolio(monthly_savings=1000.0, years=20, start_year=2004, start_month=1))
