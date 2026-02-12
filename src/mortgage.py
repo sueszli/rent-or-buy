@@ -1,28 +1,18 @@
-#
-# use erste bank calculator as a reference
-#
-
-TRANSFER_TAX_RATE = 0.035
-NOTARY_RATE = 0.024  # 2% + 20% VAT ≈ 2.4%
-AGENT_RATE = 0.036  # 3% + 20% VAT = 3.6%
-BANK_PROCESSING_RATE = 0.03
-LAND_REGISTRY_RATE = 0.011
-MORTGAGE_REGISTRY_RATE = 0.012
-FIXED_ADMIN_FEES = 81 + 47  # land registry admin + electronic lien fees
-BASE_INTEREST_RATE = 0.034
-MIN_DOWN_PAYMENT_RATIO = 0.20
-STANDARD_TERM_YEARS = 25
-ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
-NOTICE_MONTHS_FOR_PREPAY = 6
-TYPICAL_PRICE_FOR_COSTS = 500000.0
-TYPICAL_APARTMENT_SIZE_M2 = 80.0
-RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
+# TODO: use erste bank calculator as a reference
 
 
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
     assert 0 <= purchase_price <= 1e9
     assert 0 <= mortgage_amount <= 1e9
     # initial costs in addition to the minimum down payment
+
+    LAND_REGISTRY_RATE = 0.011
+    MORTGAGE_REGISTRY_RATE = 0.012
+    TRANSFER_TAX_RATE = 0.035
+    NOTARY_RATE = 0.024  # 2% + 20% VAT ≈ 2.4%
+    AGENT_RATE = 0.036  # 3% + 20% VAT = 3.6%
+    BANK_PROCESSING_RATE = 0.03
+    FIXED_ADMIN_FEES = 81 + 47  # land registry admin + electronic lien fees
 
     def _land_registry_fee(purchase_price: float) -> float:
         if purchase_price <= 500000.0:
@@ -50,6 +40,8 @@ def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
 
 
 def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
+    MIN_DOWN_PAYMENT_RATIO = 0.20
+
     # how much we need to borrow
     if purchase_price <= 0 or cash_savings <= 0:
         return 0.0
@@ -74,16 +66,21 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
 
 
 def _interest_rate(down_payment_ratio: float) -> float:
+    BASE_INTEREST_RATE = 0.034
+
     # interest rate is better with higher down payment
-    match down_payment_ratio:
-        case r if r >= 0.40:
-            return BASE_INTEREST_RATE - 0.005
-        case r if r >= 0.30:
-            return BASE_INTEREST_RATE - 0.0025
-        case r if r >= 0.20:
-            return BASE_INTEREST_RATE
-        case _:
-            return BASE_INTEREST_RATE + 0.005
+    if down_payment_ratio >= 0.40:
+        return BASE_INTEREST_RATE - 0.005
+    elif down_payment_ratio >= 0.30:
+        return BASE_INTEREST_RATE - 0.0025
+    elif down_payment_ratio >= 0.20:
+        return BASE_INTEREST_RATE
+    else:
+        return BASE_INTEREST_RATE + 0.005
+
+
+TYPICAL_PRICE_FOR_COSTS = 500000.0
+TYPICAL_APARTMENT_SIZE_M2 = 80.0
 
 
 def _monthly_ownership_costs(purchase_price: float) -> float:
@@ -121,6 +118,10 @@ def _simulate_payoff_years(
     monthly_savings: float,
     monthly_ownership_costs: float,
 ) -> tuple[float, float]:
+    STANDARD_TERM_YEARS = 25
+    ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
+    NOTICE_MONTHS_FOR_PREPAY = 6
+
     # simulate month-by-month payoff considering prepayment rules and 10-year option to fully pay off with notice
     # returns (years, total_interest_paid)
     if mortgage_amount <= 0:
@@ -195,6 +196,8 @@ def estimate_mortgage_payoff_years(
     cash_savings: float = 200_000.0,
     purchase_price: float = 500_000.0,
 ) -> float:
+    RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
+
     assert monthly_savings > 0
     assert cash_savings >= 0
     assert purchase_price > 0
