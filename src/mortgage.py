@@ -60,18 +60,21 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
 def _interest_rate(down_payment_ratio: float) -> float:
     """
     interest rate is better with higher down payment
+
+    - https://wien.arbeiterkammer.at/beratung/konsumentenschutz/geld/kredite/Hypothekarkredite_202501.pdf
+    - https://www.oenb.at/en/Statistics/Charts/Chart-4.html
     """
 
     BASE_INTEREST_RATE = 0.034
 
     if down_payment_ratio >= 0.40:
-        return BASE_INTEREST_RATE - 0.005
+        return BASE_INTEREST_RATE - 0.005  # common discount (estimate)
     elif down_payment_ratio >= 0.30:
         return BASE_INTEREST_RATE - 0.0025
     elif down_payment_ratio >= 0.20:
-        return BASE_INTEREST_RATE
+        return BASE_INTEREST_RATE  # standard rate
     else:
-        return BASE_INTEREST_RATE + 0.005
+        return BASE_INTEREST_RATE + 0.005  # common penalty (estimate)
 
 
 TYPICAL_PRICE_FOR_COSTS = 500000.0
@@ -83,7 +86,7 @@ def _monthly_ownership_costs(purchase_price: float) -> float:
     property maintenance, regardless of mortgage
     """
 
-    assert 1000.0 <= purchase_price < 1e10
+    assert 1000.0 <= purchase_price
     scale_factor = purchase_price / TYPICAL_PRICE_FOR_COSTS
     apartment_size = TYPICAL_APARTMENT_SIZE_M2 * scale_factor
     operating_costs = 4.0 * apartment_size  # €4/m² average
@@ -203,6 +206,10 @@ def estimate_mortgage_payoff_years(
 ) -> float:
     """
     estimate how many years it takes to pay off a mortgage
+
+    capped at 35 years
+
+    - https://www.fma.gv.at/en/fma-issues-regulation-for-sustainable-lending-standards-for-residential-real-estate-financing-kim-v/
     """
 
     RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
