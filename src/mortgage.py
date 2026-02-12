@@ -48,7 +48,7 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
         return 0.0
     min_down = purchase_price * MIN_DOWN_PAYMENT_RATIO
 
-    # Initial assumption for mortgage
+    # initial assumption for mortgage
     assumed_mortgage = purchase_price * (1 - MIN_DOWN_PAYMENT_RATIO)
     upfront = _upfront_costs(purchase_price, assumed_mortgage)
     available_down = cash_savings - upfront
