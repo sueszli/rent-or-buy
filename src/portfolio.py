@@ -63,11 +63,13 @@ def _prices(start_year: int, start_month: int, months: int) -> list[float]:
     start_date = datetime.date(start_year, start_month, 1)
     prices_df = df.filter(pl.col("Date") >= start_date).head(months)
     prices = prices_df["price"].to_list()
-    assert len(prices) == months, "insufficient price data"
+    assert len(prices) == months, f"insufficient price data. expected range {start_date} to {start_date + relativedelta(months=months)}. actual range {prices_df['Date'].min()} to {prices_df['Date'].max()}."
     return prices
 
 
-def simulate_austrian_portfolio(monthly_savings: float, start_year: int, start_month: int, months: int) -> list[float]:
+def simulate_austrian_portfolio(monthly_savings: float, years: int, start_year: int = 2004, start_month: int = 1) -> list[float]:
+    assert 1 <= years <= 20
+    months = years * 12
     prices = _prices(start_year, start_month, months)
 
     total_shares = 0.0
@@ -108,5 +110,5 @@ def simulate_austrian_portfolio(monthly_savings: float, start_year: int, start_m
     return cash_in_hand_history
 
 
-results = simulate_austrian_portfolio(monthly_savings=2000, start_year=2020, start_month=1, months=4)
+results = simulate_austrian_portfolio(monthly_savings=2000, years=20)
 print(results)
