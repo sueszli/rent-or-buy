@@ -151,7 +151,8 @@ def _simulate_payoff_years(
 
     monthly_mortgage_payment = _monthly_mortgage_payment(mortgage_amount, annual_interest_rate, STANDARD_TERM_YEARS)
     monthly_savings -= _monthly_ownership_costs()
-    assert monthly_savings >= monthly_mortgage_payment, "monthly savings insufficient for mortgage and ownership costs"
+    assert monthly_savings >= monthly_mortgage_payment, "insufficient monthly savings"
+
     monthly_excess = monthly_savings - monthly_mortgage_payment
     monthly_spending_limit = ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY / 12.0  # smoothed
 
