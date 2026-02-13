@@ -249,8 +249,6 @@ def estimate_real_estate_value(purchase_price: float, purchase_year: int, curren
     assert 0 < purchase_year < 2026
 
     datapath = Path(__file__).parent.parent / "data" / "rppi.csv"
-
-    # fmt: off
     value_increase = (
         pl.read_csv(datapath)
         # track price changes
@@ -263,7 +261,6 @@ def estimate_real_estate_value(purchase_price: float, purchase_year: int, curren
         .select(pl.col("values").last() / pl.col("values").first())
         .item()
     )
-    # fmt: on
     return purchase_price * value_increase
 
 
