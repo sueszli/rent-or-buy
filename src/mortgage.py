@@ -77,8 +77,6 @@ def _interest_rate(down_payment_ratio: float) -> float:
         return BASE_INTEREST_RATE + 0.005  # common penalty (estimate)
 
 
-TYPICAL_PRICE_FOR_COSTS = 500000.0
-TYPICAL_APARTMENT_SIZE_M2 = 80.0
 
 
 def _monthly_ownership_costs() -> float:
@@ -89,17 +87,18 @@ def _monthly_ownership_costs() -> float:
 
     - https://www.statistik.at/statistiken/bevoelkerung-und-soziales/wohnen/wohnkosten
     - https://www.ovi.at/aktuelles/detailansicht/anhebung-der-mindestruecklage-1-1-2026
-    - https://www.infina.at/ratgeber/steuern/grundsteuer-oesterreich/
+    - https://www.wko.at/oe/information-consulting/immobilien-vermoegenstreuhaender/mindestruecklage-wohnungseigentumsgesetz
     - https://www.arbeiterkammer.at/haushaltsversicherungen
-    - https://www.stromrechner.at/stromverbrauch-haushalt
     """
+    typical_apartment_size_m2 = 80.0
 
-    INSURANCE_MONTHLY = 20.0  # typical household insurance
-    PROPERTY_TAX_MONTHLY = 15.0  # estimate (grundsteuer is very low)
-    operating_costs = 2.75 * TYPICAL_APARTMENT_SIZE_M2
-    maintenance_reserve = 1.12 * TYPICAL_APARTMENT_SIZE_M2
-    utilities = 3.00 * TYPICAL_APARTMENT_SIZE_M2  # heat/elec combined
-    return operating_costs + maintenance_reserve + PROPERTY_TAX_MONTHLY + INSURANCE_MONTHLY + utilities
+    bk_rate = 2.60  # operating costs (betriebskosten)
+    reserve_rate = 1.12 # maintenance reserve (reparaturrücklage)
+    energy_rate = 2.50 # energy costs (heizkosten, warmwasser, strom)
+    insurance_rate = 0.30 # insurance costs (hausversicherung, haftpflicht, etc.)
+    energy_rate = 0.20 # tax costs (grundsteuer, etc.)
+    total_cost_per_m2 = bk_rate + reserve_rate + energy_rate + insurance_rate
+    return total_cost_per_m2 * typical_apartment_size_m2
 
 
 def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) -> float:
@@ -218,6 +217,8 @@ def estimate_mortgage_payoff_years(
     """
 
     RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
+    TYPICAL_PRICE_FOR_COSTS = 500000.0
+    TYPICAL_APARTMENT_SIZE_M2 = 80.0
 
     assert monthly_savings > 0
     assert cash_savings >= 0
