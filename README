@@ -1,5 +1,14 @@
-Backtesting: (a) passive world equity ETF vs (b) real estate in vienna
+The "Rent vs. Buy" decision is often based on rule-of-thumb assumptions or simplified calculators.
 
+This project aims for higher fidelity by:
+
+- (1) Backtesting with historical data. It uses `MSCI World` / `FTSE All-World` prices and the `Residential Real Estate Price Index (RPPI)` for Vienna.
+- (2) Modeling friction. It accounts for upfront costs (taxes, register fees, notary), ongoing maintenance (operating costs, reserves) and liquidation costs (KESt for equity, early exit penalties for mortgages).
+- (3) Austrian Context. It implements Austrian income tax (13th/14th salary), social insurance caps, and "capital gains" treatment for accumulating ETFs (meldefonds).
+
+Example output:
+
+```
    (Y)     ^
 2039435.47 |
 1965274.18 | ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -39,3 +48,6 @@ Legend:
 -------
 ⠤⠤ Equity ETF
 ⠤⠤ Real Estate
+```
+
+Also check out plots in the `assets/` folder.
