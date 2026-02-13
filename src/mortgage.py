@@ -222,7 +222,7 @@ def estimate_mortgage_payoff_years(
     down_payment_ratio = down_payment / purchase_price
     annual_interest_rate = _interest_rate(down_payment_ratio)
     monthly_ownership_costs = _monthly_ownership_costs()
-    payoff_years, total_interest = _simulate_payoff_years(
+    payoff_years, _ = _simulate_payoff_years(
         mortgage_amount,
         annual_interest_rate,
         monthly_savings,
