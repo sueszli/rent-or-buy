@@ -6,6 +6,8 @@ import polars as pl
 from dateutil.relativedelta import relativedelta
 from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scale_x_date, scale_y_continuous, theme, theme_minimal
 
+from .income import rent_adjusted
+
 
 def _prices_vanguard(months: int, start_month: int, start_year: int) -> list[float]:
     # data also embeds TER
@@ -145,18 +147,18 @@ def simulate_equity_portfolio(
     total_shares = 0.0
     safe_from_tax = 0.0
 
-    payout_history = []
-    dates = []
-    current_date = datetime.date(start_year, start_month, 1)
+    start_date = datetime.date(start_year, start_month, 1)
+    dates = [start_date + relativedelta(months=i) for i in range(len(prices))]
 
-    for price in prices:
+    payout_history = []
+
+    for price, current_date in zip(prices, dates):
+        # deduct rent
+        monthly_savings -= rent_adjusted(current_date.year)
+
         # buy shares
         total_shares += monthly_savings / _buy_price(price)
         safe_from_tax += monthly_savings
-
-        # advance time
-        dates.append(current_date)
-        current_date += relativedelta(months=1)
 
         # annual tax event in january
         if current_date.month == 1:
