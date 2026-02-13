@@ -43,15 +43,13 @@ def _mortgage_amount(purchase_price: float, cash_savings: float) -> float:
     assumed_mortgage = purchase_price * LOAN_TO_COLlATERAL_RATIO
     upfront = _upfront_costs(purchase_price, assumed_mortgage)
     available_down = cash_savings - upfront
-    if available_down < min_down:
-        raise ValueError("cash savings insufficient for minimum down payment and costs")
+    assert available_down >= min_down, "cash savings insufficient for minimum down payment and costs"
     mortgage = purchase_price - available_down
 
     # check again
     upfront = _upfront_costs(purchase_price, mortgage)
     available_down = cash_savings - upfront
-    if available_down < min_down:
-        raise ValueError("cash savings insufficient for minimum down payment and costs")
+    assert available_down >= min_down, "cash savings insufficient for minimum down payment and costs"
     mortgage = purchase_price - available_down
 
     return mortgage
@@ -140,8 +138,7 @@ def _simulate_payoff_years(
     monthly_interest_rate = annual_interest_rate / 12.0
     monthly_mortgage_payment = _monthly_mortgage_payment(mortgage_amount, annual_interest_rate, STANDARD_TERM_YEARS)
     available_for_mortgage = monthly_savings - monthly_ownership_costs
-    if available_for_mortgage < monthly_mortgage_payment:
-        raise ValueError("monthly savings insufficient for mortgage and ownership costs")
+    assert available_for_mortgage >= monthly_mortgage_payment, "monthly savings insufficient for mortgage and ownership costs"
 
     extra_available = available_for_mortgage - monthly_mortgage_payment
     monthly_extra_max = ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY / 12.0
@@ -153,8 +150,7 @@ def _simulate_payoff_years(
 
     while balance > 0:
         month += 1
-        if month > 1000 * 12:
-            raise ValueError("simulation did not converge")
+        assert month <= 1000 * 12, "simulation did not converge"
 
         # monthly interest and principal from standard payment
         interest = balance * monthly_interest_rate
@@ -209,10 +205,6 @@ def estimate_mortgage_payoff_years(
     """
     estimate how many years it takes to pay off a mortgage
     """
-    RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
-    TYPICAL_PRICE_FOR_COSTS = 500000.0
-    TYPICAL_APARTMENT_SIZE_M2 = 80.0
-
     assert monthly_savings > 0
     assert cash_savings >= 0
     assert purchase_price > 0
@@ -223,41 +215,17 @@ def estimate_mortgage_payoff_years(
     if remaining <= 0:
         return 0.0
 
-    # could we save up instead of getting a mortgage?
-    scale_factor = purchase_price / TYPICAL_PRICE_FOR_COSTS
-    apartment_size = TYPICAL_APARTMENT_SIZE_M2 * scale_factor
-    rent = RENT_PER_M2 * apartment_size
-    effective_monthly_save = monthly_savings - rent
-    if effective_monthly_save > 0:
-        save_months = remaining / effective_monthly_save
-        save_years = save_months / 12.0
-    else:
-        save_months = 0.0
-        save_years = float("inf")
-
-    try:
-        # simulate mortgage payoff
-        mortgage_amount = _mortgage_amount(purchase_price, cash_savings)
-        upfront = _upfront_costs(purchase_price, mortgage_amount)
-        down_payment = cash_savings - upfront
-        down_payment_ratio = down_payment / purchase_price
-        annual_interest_rate = _interest_rate(down_payment_ratio)
-        monthly_ownership_costs = _monthly_ownership_costs()
-        payoff_years, total_interest = _simulate_payoff_years(
-            mortgage_amount,
-            annual_interest_rate,
-            monthly_savings,
-            monthly_ownership_costs,
-        )
-
-        extra_fees = upfront - cash_upfront
-        mortgage_cost = total_interest + extra_fees
-        save_benefit = (rent - monthly_ownership_costs) * (save_months if save_years < float("inf") else 0)
-        if mortgage_cost > save_benefit:
-            return save_years if save_years < float("inf") else payoff_years
-        else:
-            return payoff_years
-
-    except Exception:
-        # fall back to other option if mortgage simulation fails
-        return save_years if save_years < float("inf") else float("inf")
+    # simulate mortgage payoff
+    mortgage_amount = _mortgage_amount(purchase_price, cash_savings)
+    upfront = _upfront_costs(purchase_price, mortgage_amount)
+    down_payment = cash_savings - upfront
+    down_payment_ratio = down_payment / purchase_price
+    annual_interest_rate = _interest_rate(down_payment_ratio)
+    monthly_ownership_costs = _monthly_ownership_costs()
+    payoff_years, total_interest = _simulate_payoff_years(
+        mortgage_amount,
+        annual_interest_rate,
+        monthly_savings,
+        monthly_ownership_costs,
+    )
+    return payoff_years
