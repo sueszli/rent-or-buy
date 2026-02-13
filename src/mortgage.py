@@ -130,7 +130,6 @@ def _simulate_payoff_years(
     simulate month-by-month payoff considering prepayment rules and 10-year option to fully pay off with notice
     returns (years, total_interest_paid)
     """
-
     STANDARD_TERM_YEARS = 25
     ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
     NOTICE_MONTHS_FOR_PREPAY = 6
