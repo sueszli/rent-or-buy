@@ -147,7 +147,7 @@ def _simulate_payoff_years(
 
     # paid off immediately
     if mortgage_amount <= 0:
-        return 0.0, 0.0
+        return 0.0
 
     monthly_mortgage_payment = _monthly_mortgage_payment(mortgage_amount, annual_interest_rate, STANDARD_TERM_YEARS)
     monthly_savings = monthly_savings - _monthly_ownership_costs()
