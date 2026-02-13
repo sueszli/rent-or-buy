@@ -284,6 +284,8 @@ def simulate_real_estate_portfolio(
     payout_history = []
     start_date = datetime.date(start_year, 1, 1)
 
+    current_year_value = 0.0
+
     for i in range(years * 12):
         current_date = start_date + relativedelta(months=i)
         dates.append(current_date)
