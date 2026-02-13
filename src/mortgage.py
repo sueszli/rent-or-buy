@@ -141,7 +141,7 @@ def _simulate_payoff_years(
     STANDARD_TERM_YEARS = 25
     MAX_MONTHLY_PAYMENT = 10_000.0 / 12  # smoothed
 
-    EARLY_EXIT_NOTICE_MONTHS = 6  # -----> is this even true????
+    EARLY_EXIT_NOTICE_MONTHS = 6
     EARLY_EXIT_PENALTY_RATE = 0.01
 
     # paid off immediately
