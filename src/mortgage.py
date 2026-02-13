@@ -105,12 +105,13 @@ def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) 
 
     formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
     where M = monthly payment, P = principal, r = monthly rate, n = number of payments
-    """
 
-    assert 0 < principal <= 1e9
+    - https://www.fma.gv.at/en/fma-issues-regulation-for-sustainable-lending-standards-for-residential-real-estate-financing-kim-v/
+    """
+    assert 0 < principal
     assert 0 <= annual_rate <= 1.0
-    assert 0 < years <= 100
-    # where M = monthly payment, P = principal, r = monthly rate, n = number of payments
+    assert 0 < years <= 35, "mortgage over 35 years is not permitted under KIM-VO regulation"
+
     if annual_rate <= 1e-9:
         return principal / (years * 12)
     monthly_rate = annual_rate / 12.0
@@ -208,10 +209,6 @@ def estimate_mortgage_payoff_years(
 ) -> float:
     """
     estimate how many years it takes to pay off a mortgage
-
-    capped at 35 years
-
-    - https://www.fma.gv.at/en/fma-issues-regulation-for-sustainable-lending-standards-for-residential-real-estate-financing-kim-v/
     """
 
     RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
