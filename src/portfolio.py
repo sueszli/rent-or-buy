@@ -215,6 +215,3 @@ def plot_portfolio(df: pl.DataFrame):
         + scale_y_continuous(labels=lambda label: [f"{x:,.0f}€" for x in label])
         + scale_x_date(expand=(0.1, 0.1))
     ).show()
-
-
-# plot_portfolio(simulate_portfolio(monthly_savings=2000))
