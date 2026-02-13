@@ -1,6 +1,6 @@
 import datetime
-import pathlib
 from enum import Enum
+from pathlib import Path
 
 import polars as pl
 from dateutil.relativedelta import relativedelta
@@ -9,7 +9,7 @@ from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scal
 
 def _prices_vanguard(months: int, start_month: int, start_year: int) -> list[float]:
     # data also embeds TER
-    datapath = pathlib.Path(__file__).parent.parent / "data" / "all-world.csv"
+    datapath = Path(__file__).parent.parent / "data" / "all-world.csv"
     assert 1 * 12 <= months <= 20 * 12, f"insufficient data for {months} months"
     assert 1 <= start_month <= 12, f"invalid start month {start_month}"
     assert 2003 <= start_year <= 2024, f"invalid start year {start_year}"
@@ -54,7 +54,7 @@ def _annual_tax_vanguard(year: int, total_shares: float, current_price: float) -
 
 def _prices_msci(months: int, start_month: int, start_year: int) -> list[float]:
     # data also embeds TER
-    datapath = pathlib.Path(__file__).parent.parent / "data" / "msci-world.csv"
+    datapath = Path(__file__).parent.parent / "data" / "msci-world.csv"
     assert 1 * 12 <= months <= 38 * 12, f"insufficient data for {months} months"
     assert 1 <= start_month <= 12, f"invalid start month {start_month}"
     assert 1987 <= start_year <= 2025, f"invalid start year {start_year}"

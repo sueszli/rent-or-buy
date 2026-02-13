@@ -1,3 +1,9 @@
+from datetime import datetime
+from pathlib import Path
+
+import polars as pl
+
+
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
     """
     initial costs in addition to the minimum down payment
@@ -234,3 +240,22 @@ def estimate_mortgage_payoff_years(
     annual_interest_rate = _interest_rate(down_payment_ratio)
     payoff_years = _simulate_payoff_years(mortgage_amount, annual_interest_rate, monthly_savings)
     return payoff_years
+
+
+def estimate_real_estate_value(purchase_price: float, purchase_year: int) -> float:
+    """
+    estimate the inflation-adjusted value
+    """
+    assert purchase_price > 0
+    assert purchase_year > 0
+
+    _ = datetime.now().year
+
+    datapath = Path(__file__).parent.parent / "data" / "rppi.csv"
+    # df = pl.read_csv(datapath).with_columns(pl.col("Date").str.to_date("%m/%Y")).select(pl.col("Date"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
+    df = pl.read_csv(datapath)
+    print(df)
+
+
+estimate = estimate_real_estate_value(500_000.0, 2000)
+print(estimate)
