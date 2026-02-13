@@ -3,7 +3,7 @@ from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scal
 
 from equity import Products, simulate_equity_portfolio
 from income import IncomePercentile
-from real_estate import simulate_real_estate_portfolio
+from real_estate import estimate_mortgage_payoff_years, simulate_real_estate_portfolio
 
 
 def plot_comparison(df: pl.DataFrame):
@@ -36,39 +36,35 @@ def plot_comparison(df: pl.DataFrame):
 
 
 def run_comparison():
-    INITIAL_LUMP_SUM = 100_000
-    PROPERTY_PRICE = 400_000
-    INCOME_PERCENTILE = IncomePercentile.pct_75th
+    INITIAL_LUMP_SUM = 130_000
+    PROPERTY_PRICE = 500_000
+    INCOME = IncomePercentile.pct_75th.value / 12
     START_YEAR = 1994
-    YEARS = 30
+    YEARS = int(estimate_mortgage_payoff_years(INCOME, INITIAL_LUMP_SUM, PROPERTY_PRICE)) + 10
 
     equity_df = simulate_equity_portfolio(
-        monthly_savings=INCOME_PERCENTILE.value,
+        monthly_savings=INCOME,
         years=YEARS,
         start_year=START_YEAR,
         cash_savings=INITIAL_LUMP_SUM,
         product=Products.MSCI_WORLD,
-    )
-    equity_df = equity_df.with_columns(pl.lit("Equity ETF").alias("strategy"))
-    print("\nequity strategy:")
+    ).with_columns(pl.lit("Equity ETF").alias("strategy"))
+    print("--- equity strategy:")
     print(equity_df.head(1))
     print(equity_df.tail(1))
 
     real_estate_df = simulate_real_estate_portfolio(
-        monthly_savings=INCOME_PERCENTILE.value,
+        monthly_savings=INCOME,
         years=YEARS,
         start_year=START_YEAR,
         purchase_price=PROPERTY_PRICE,
         cash_savings=INITIAL_LUMP_SUM,
-    )
-    real_estate_df = real_estate_df.with_columns(pl.lit("Real Estate").alias("strategy"))
-    print("\nreal estate strategy:")
+    ).with_columns(pl.lit("Real Estate").alias("strategy"))
+    print("--- real estate strategy:")
     print(real_estate_df.head(1))
     print(real_estate_df.tail(1))
 
-    combined_df = pl.concat([equity_df, real_estate_df])
-
-    plot_comparison(combined_df)
+    plot_comparison(pl.concat([equity_df, real_estate_df]))
 
 
 if __name__ == "__main__":
