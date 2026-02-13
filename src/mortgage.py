@@ -133,6 +133,8 @@ def _simulate_payoff_years(
     simulate month-by-month payoff considering prepayment rules and 10-year option to fully pay off with notice
     returns (years, total_interest_paid)
 
+    in austria you can pay a 1% penalty (HIKrG § 20) to exit a fixed-rate mortgage early
+
     - https://www.infina.at/ratgeber/finanzierung/laufzeit-kredit/
     - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
     - https://www.arbeiterkammer.at/beratung/konsument/Geld/Kredite/Vorzeitige-Rueckzahlung-von-Krediten.html
@@ -143,6 +145,7 @@ def _simulate_payoff_years(
     ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
     NOTICE_MONTHS_FOR_PREPAY = 6
 
+    # paid off immediately
     if mortgage_amount <= 0:
         return 0.0, 0.0
 
