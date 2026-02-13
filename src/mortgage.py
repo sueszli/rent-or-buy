@@ -127,7 +127,6 @@ def _simulate_payoff_years(
     mortgage_amount: float,
     annual_interest_rate: float,
     monthly_savings: float,
-    monthly_ownership_costs: float,
 ) -> tuple[float, float]:
     """
     simulate month-by-month payoff considering
@@ -152,72 +151,70 @@ def _simulate_payoff_years(
     if mortgage_amount <= 0:
         return 0.0, 0.0
 
-    monthly_interest_rate = annual_interest_rate / 12.0
     monthly_mortgage_payment = _monthly_mortgage_payment(mortgage_amount, annual_interest_rate, STANDARD_TERM_YEARS)
-    available_for_mortgage = monthly_savings - monthly_ownership_costs
-    assert available_for_mortgage >= monthly_mortgage_payment, "monthly savings insufficient for mortgage and ownership costs"
+    monthly_savings = monthly_savings - _monthly_ownership_costs()
+    assert monthly_savings >= monthly_mortgage_payment, "monthly savings insufficient for mortgage and ownership costs"
+    monthly_excess = monthly_savings - monthly_mortgage_payment
+    monthly_spending_limit = ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY / 12.0  # smoothed
 
-    extra_available = available_for_mortgage - monthly_mortgage_payment
-    monthly_extra_max = ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY / 12.0  # smoothed
-
-    balance = mortgage_amount
-    accumulated_savings = 0.0
+    debt = mortgage_amount
+    accumulated_savings = 0.0  # what we save up for a potential early exit
+    accumulated_interest = 0.0  # what the bank earns for lending money
     month = 0
-    total_interest = 0.0
 
-    while balance > 0:
+    while debt > 0:
         month += 1
         assert month <= 1000 * 12, "simulation did not converge"
 
         # pay regular monthly payment
-        interest = balance * monthly_interest_rate
-        assert interest >= 0, f"interest {interest} must be positive (balance={balance}, rate={monthly_interest_rate})"
-        total_interest += interest
+        interest = debt * annual_interest_rate / 12.0
+        assert interest >= 0, f"interest {interest} must be positive (debt={debt}, rate={annual_interest_rate / 12.0})"
+        accumulated_interest += interest
         principal = monthly_mortgage_payment - interest
         principal = max(principal, 0.0)  # prevent negative if rate=0
-        balance -= principal
-        if balance <= 0:
+        debt -= principal
+        if debt <= 0:
             break
 
         # pay whatever we still have available (capped)
-        extra_applied = min(extra_available, monthly_extra_max, balance)
-        balance -= extra_applied
-        if balance <= 0:
+        extra_applied = min(monthly_excess, monthly_spending_limit, debt)
+        debt -= extra_applied
+        if debt <= 0:
             break
 
         # save the rest up for a potential early exit
-        excess_saved = max(0.0, extra_available - monthly_extra_max)
+        excess_saved = max(0.0, monthly_excess - monthly_spending_limit)
         accumulated_savings += excess_saved
 
         #
         # should we exit early?
         #
 
-        excess_per_month = max(0.0, extra_available - monthly_extra_max)
+        excess_per_month = max(0.0, monthly_excess - monthly_spending_limit)
         projected_lump = accumulated_savings + EARLY_EXIT_NOTICE_MONTHS * excess_per_month
 
-        # simulate balance during notice period with continued payments
-        tmp_balance = balance
+        # simulate loan during notice period with continued payments
+        tmp_debt = debt
         tmp_interest = 0.0
         for _ in range(EARLY_EXIT_NOTICE_MONTHS):
-            if tmp_balance <= 0:
+            if tmp_debt <= 0:
                 break
-            temp_interest_month = tmp_balance * monthly_interest_rate
+            temp_interest_month = tmp_debt * annual_interest_rate / 12.0
             tmp_interest += temp_interest_month
             temp_principal = monthly_mortgage_payment - temp_interest_month
             temp_principal = max(temp_principal, 0.0)
-            temp_extra = min(monthly_extra_max, tmp_balance - temp_principal)
-            tmp_balance -= temp_principal + temp_extra
+            temp_extra = min(monthly_spending_limit, tmp_debt - temp_principal)
+            tmp_debt -= temp_principal + temp_extra
 
-        penalty_cost = tmp_balance * EARLY_EXIT_PENALTY_RATE
-        total_cost_to_exit = tmp_balance + penalty_cost
+        penalty_cost = tmp_debt * EARLY_EXIT_PENALTY_RATE
+        total_cost_to_exit = tmp_debt + penalty_cost
 
-        # check if our saved lump sum covers the balance AND the penalty
+        # check if our saved lump sum covers the debt AND the penalty
         if projected_lump >= total_cost_to_exit:
-            total_interest += tmp_interest + penalty_cost
-            return (month + EARLY_EXIT_NOTICE_MONTHS) / 12.0, total_interest
+            accumulated_interest += tmp_interest + penalty_cost
+            return (month + EARLY_EXIT_NOTICE_MONTHS) / 12.0, accumulated_interest
 
-    return month / 12.0, total_interest
+    return month / 12.0, accumulated_interest
 
 
 def estimate_mortgage_payoff_years(
@@ -244,11 +241,9 @@ def estimate_mortgage_payoff_years(
     down_payment = cash_savings - upfront
     down_payment_ratio = down_payment / purchase_price
     annual_interest_rate = _interest_rate(down_payment_ratio)
-    monthly_ownership_costs = _monthly_ownership_costs()
     payoff_years, _ = _simulate_payoff_years(
         mortgage_amount,
         annual_interest_rate,
         monthly_savings,
-        monthly_ownership_costs,
     )
     return payoff_years
