@@ -144,5 +144,6 @@ def rent_adjusted(year: int) -> float:
         .filter((pl.col("year") >= int(year)) & (pl.col("year") <= BASELINE_YEAR))
         # compute ratio
         .select(pl.col("values").first() / pl.col("values").last())
+        .item()
     )
     return BASELINE_RENT * value_increase

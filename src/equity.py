@@ -5,7 +5,7 @@ from pathlib import Path
 import polars as pl
 from dateutil.relativedelta import relativedelta
 
-from .income import rent_adjusted
+from income import rent_adjusted
 
 
 def _prices_vanguard(months: int, start_month: int, start_year: int) -> list[float]:
@@ -126,6 +126,7 @@ def simulate_equity_portfolio(
     monthly_savings: float,
     years: int,
     start_year: int,
+    cash_savings: float = 0.0,
     product: Products = Products.MSCI_WORLD,
 ) -> pl.DataFrame:
     SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
@@ -150,13 +151,18 @@ def simulate_equity_portfolio(
 
     payout_history = []
 
-    for price, current_date in zip(prices, dates):
+    for i, (price, current_date) in enumerate(zip(prices, dates)):
         # deduct rent
-        monthly_savings -= rent_adjusted(current_date.year)
+        current_investable = monthly_savings - rent_adjusted(current_date.year)
+
+        # one-time lump sum
+        if i == 0:
+            current_investable += cash_savings
 
         # buy shares
-        total_shares += monthly_savings / _buy_price(price)
-        safe_from_tax += monthly_savings
+        assert current_investable > 0
+        total_shares += current_investable / _buy_price(price)
+        safe_from_tax += current_investable
 
         # annual tax event in january
         if current_date.month == 1:
