@@ -101,13 +101,13 @@ class IncomePercentile(Enum):
     pct_90th = 91_300
 
 
-def net_savings_monthly(income_annual: IncomePercentile, owns_property: bool = False) -> float:
+def net_savings_monthly(income_annual: IncomePercentile, pays_rent: bool = False) -> float:
     cost_of_living = {
         # single person in vienna, 1bd apartment, not overly frugal or lavish
         # based on:
         # - https://www.numbeo.com/cost-of-living/in/Vienna
         # - https://www.willhaben.at/iad/immobilien/mietwohnungen/wien
-        "Housing": 0.00 if owns_property else 850.00,
+        "Housing": 850.00 if pays_rent else 0.00,
         "Utilities": 290.00,  # energy + heating + internet + mobile
         "Groceries": 280.00,  # food
         "Transportation": 50.00,  # public transport annual pass, occasional taxi
