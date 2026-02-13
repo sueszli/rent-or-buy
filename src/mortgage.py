@@ -182,7 +182,7 @@ def _simulate_payoff_years(
         excess_saved = max(0.0, extra_available - monthly_extra_max)
         accumulated_savings += excess_saved
 
-        # after 10 years, check for full prepayment with notice ---> needs to implement benalty
+        # full prepayment with 1% penalty
         if month >= 120:
             excess_per_month = max(0.0, extra_available - monthly_extra_max)
             projected_lump = accumulated_savings + NOTICE_MONTHS_FOR_PREPAY * excess_per_month
