@@ -121,11 +121,11 @@ class Products(Enum):
     """
 
 
-def simulate_portfolio(
+def simulate_equity_portfolio(
     monthly_savings: float,
-    years: int = 25,
-    start_month: int = 1,
-    start_year: int = 2000,
+    years: int,
+    start_month: int,
+    start_year: int,
     product: Products = Products.MSCI_WORLD,
 ) -> pl.DataFrame:
     SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
@@ -184,7 +184,7 @@ def simulate_portfolio(
     return pl.DataFrame({"date": dates, "payout": payout_history})
 
 
-def plot_portfolio(df: pl.DataFrame):
+def plot_equity_portfolio(df: pl.DataFrame):
     first_row = df.head(1)
     last_row = df.tail(1)
     (

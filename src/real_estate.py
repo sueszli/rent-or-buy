@@ -241,7 +241,7 @@ def estimate_mortgage_payoff_years(
     return payoff_years
 
 
-def estimate_real_estate_value(purchase_price: float, purchase_year: int, current_year: int) -> float:
+def _estimate_real_estate_value(purchase_price: float, purchase_year: int, current_year: int) -> float:
     """
     estimate the inflation-adjusted value
     """
@@ -262,3 +262,12 @@ def estimate_real_estate_value(purchase_price: float, purchase_year: int, curren
         .item()
     )
     return purchase_price * value_increase
+
+
+def simulate_real_estate_portfolio(
+    monthly_savings: float,
+    years: int,
+    start_month: int,
+    start_year: int,
+) -> pl.DataFrame:
+    pass

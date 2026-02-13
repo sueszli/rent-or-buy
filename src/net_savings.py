@@ -1,4 +1,7 @@
 from enum import Enum
+from pathlib import Path
+
+import polars as pl
 
 
 def _net_special(gross_special_payments: float) -> float:
@@ -101,13 +104,13 @@ class IncomePercentile(Enum):
     pct_90th = 91_300
 
 
-def net_savings_monthly(income_annual: IncomePercentile, pays_rent: bool = False) -> float:
+def net_savings_monthly(income_annual: IncomePercentile) -> float:
     cost_of_living = {
         # single person in vienna, 1bd apartment, not overly frugal or lavish
         # based on:
         # - https://www.numbeo.com/cost-of-living/in/Vienna
         # - https://www.willhaben.at/iad/immobilien/mietwohnungen/wien
-        "Housing": 850.00 if pays_rent else 0.00,
+        "Housing": 850.00,
         "Utilities": 290.00,  # energy + heating + internet + mobile
         "Groceries": 280.00,  # food
         "Transportation": 50.00,  # public transport annual pass, occasional taxi
@@ -118,3 +121,28 @@ def net_savings_monthly(income_annual: IncomePercentile, pays_rent: bool = False
     annual_expenses = sum(cost_of_living.values()) * 12
     net_annual_salary = _net_salary_annual(income_annual.value)
     return (net_annual_salary - annual_expenses) / 12
+
+
+def rent_adjusted(income_annual: IncomePercentile, year: int) -> float:
+    """
+    monthly rent adjusted for inflation
+
+    couldn't find any consumer price index data, so omitting those expenses for now
+    """
+    assert 0 < year < 2025
+    BASELINE_RENT = 850.00
+    BASELINE_YEAR = 2024
+
+    datapath = Path(__file__).parent.parent / "data" / "rppi.csv"
+    value_increase = (
+        pl.read_csv(datapath)
+        # track price changes
+        .filter(pl.col("period") == "quarter")
+        .filter(pl.col("indicator") == "Real estate price index, Vienna, apartments total, 2000=100")
+        # filter year
+        .select(pl.col("year"), pl.col("quarter"), pl.col("values"))
+        .filter((pl.col("year") >= int(year)) & (pl.col("year") <= BASELINE_YEAR))
+        # compute ratio
+        .select(pl.col("values").first() / pl.col("values").last())
+    )
+    return BASELINE_RENT * value_increase
