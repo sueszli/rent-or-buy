@@ -154,8 +154,7 @@ def _simulate_payoff_years(
     monthly_excess = monthly_savings - monthly_mortgage_payment
 
     debt = mortgage_amount
-    accumulated_savings = 0.0  # what we save up for a potential early exit
-    accumulated_interest = 0.0  # what the bank earns for lending money
+    accumulated_savings = 0.0  # for a potential early exit
     month = 0
 
     while debt > 0:
@@ -165,16 +164,14 @@ def _simulate_payoff_years(
         # pay regular monthly payment
         interest = debt * annual_interest_rate / 12.0
         assert interest >= 0, f"interest {interest} must be positive (debt={debt}, rate={annual_interest_rate / 12.0})"
-        accumulated_interest += interest
-        principal = monthly_mortgage_payment - interest
-        principal = max(principal, 0.0)  # prevent negative if rate=0
+        principal = max(monthly_mortgage_payment - interest, 0.0)
         debt -= principal
         if debt <= 0:
             break
 
         # pay whatever we still have available (capped)
-        extra_applied = min(monthly_excess, MAX_MONTHLY_PAYMENT, debt)
-        debt -= extra_applied
+        extra_principal = min(monthly_excess, MAX_MONTHLY_PAYMENT, debt)
+        debt -= extra_principal
         if debt <= 0:
             break
 
@@ -197,8 +194,7 @@ def _simulate_payoff_years(
                 break
             temp_interest_month = tmp_debt * annual_interest_rate / 12.0
             tmp_interest += temp_interest_month
-            temp_principal = monthly_mortgage_payment - temp_interest_month
-            temp_principal = max(temp_principal, 0.0)
+            temp_principal = max(monthly_mortgage_payment - temp_interest_month, 0.0)
             temp_extra = min(MAX_MONTHLY_PAYMENT, tmp_debt - temp_principal)
             tmp_debt -= temp_principal + temp_extra
 
@@ -207,8 +203,7 @@ def _simulate_payoff_years(
 
         # check if our saved lump sum covers the debt AND the penalty
         if projected_lump >= total_cost_to_exit:
-            accumulated_interest += tmp_interest + penalty_cost
-            return (month + EARLY_EXIT_NOTICE_MONTHS) / 12.0, accumulated_interest
+            return (month + EARLY_EXIT_NOTICE_MONTHS) / 12.0
 
     return month / 12.0
 
