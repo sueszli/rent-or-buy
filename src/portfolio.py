@@ -22,7 +22,6 @@ def _prices_vanguard(months: int, start_month: int, start_year: int) -> list[flo
 
 
 def _annual_tax_vanguard(year: int, total_shares: float, current_price: float) -> tuple[float, float, float]:
-    # estimated year to (AgE, Korrektur, foreign) per share in EUR
     oegk_data = {
         2019: (0.4, 0.32, 0.04),
         2020: (0.4, 0.32, 0.04),
@@ -63,15 +62,16 @@ def _prices_msci(months: int, start_month: int, start_year: int) -> list[float]:
 
 
 def _annual_tax_msci(year: int, total_shares: float, current_price: float) -> tuple[float, float, float]:
-    # estimated year to (AgE, Korrektur, foreign) per share in EUR
     oegk_data = {
-        2019: (0.4, 0.32, 0.04),
-        2020: (0.4, 0.32, 0.04),
-        2021: (0.4, 0.32, 0.04),
-        2022: (0.65, 0.52, 0.07),
-        2023: (0.65, 0.52, 0.07),
-        2024: (0.35, 0.28, 0.04),
-        2025: (1.5965, 1.2962, 0.1559),
+        2017: (0.3094, 0.2059, 0.0367),
+        2018: (1.4798, 1.3653, 0.0868),
+        2019: (2.3710, 2.2201, 0.0992),
+        2020: (1.6108, 1.4773, 0.1012),
+        2021: (0.3227, 0.2015, 0.0411),
+        2022: (1.4051, 1.3079, 0.0892),
+        2023: (1.3425, 1.2032, 0, 1223),
+        2024: (1.4065, 1.2620, 0, 1287),
+        2025: (1.4068, 1.2425, 0.1322),
     }
 
     if year in oegk_data:
@@ -79,8 +79,8 @@ def _annual_tax_msci(year: int, total_shares: float, current_price: float) -> tu
     else:
         # conservative estimate
         age_rate = current_price * 0.015  # expect 1.5% dividend yield
-        step_up_rate = age_rate * 0.81  # prevent double taxation simulation (weighted by historic avg)
-        foreign_rate = age_rate * 0.1  # expect 10% of AgE to be creditable foreign tax
+        step_up_rate = age_rate * 0.88  # prevent double taxation simulation (weighted by historic avg)
+        foreign_rate = age_rate * 0.09  # expect 10% of AgE to be creditable foreign tax
 
     hypothetical_dividends = total_shares * age_rate
     foreign_tax_credit = total_shares * foreign_rate
