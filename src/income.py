@@ -123,7 +123,7 @@ def net_savings_monthly(income_annual: IncomePercentile) -> float:
     return (net_annual_salary - annual_expenses) / 12
 
 
-def rent_adjusted(income_annual: IncomePercentile, year: int) -> float:
+def rent_adjusted(year: int) -> float:
     """
     monthly rent adjusted for inflation
 
