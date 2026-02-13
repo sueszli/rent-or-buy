@@ -137,6 +137,7 @@ def _simulate_payoff_years(
     - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
     - https://www.arbeiterkammer.at/beratung/konsument/Geld/Kredite/Vorzeitige-Rueckzahlung-von-Krediten.html
     - https://www.infina.at/ratgeber/kredit-vorzeitig-zurueckzahlen/
+    - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
     """
     STANDARD_TERM_YEARS = 25
     ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
