@@ -1,5 +1,7 @@
 The "Rent vs. Buy" decision is often based on rule-of-thumb assumptions or simplified calculators.
 
+See: https://sueszli.github.io/rent-or-buy/assets/demo.pdf
+
 This project aims for higher fidelity by:
 
 - (1) Backtesting with historical data. It uses `MSCI World` / `FTSE All-World` prices and the `Residential Real Estate Price Index (RPPI)` for Vienna.
@@ -50,4 +52,3 @@ Legend:
 ⠤⠤ Real Estate
 ```
 
-Also check out plots in the `assets/` folder.
