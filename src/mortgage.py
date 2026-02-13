@@ -132,6 +132,11 @@ def _simulate_payoff_years(
     """
     simulate month-by-month payoff considering prepayment rules and 10-year option to fully pay off with notice
     returns (years, total_interest_paid)
+
+    - https://www.infina.at/ratgeber/finanzierung/laufzeit-kredit/
+    - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
+    - https://www.arbeiterkammer.at/beratung/konsument/Geld/Kredite/Vorzeitige-Rueckzahlung-von-Krediten.html
+    - https://www.infina.at/ratgeber/kredit-vorzeitig-zurueckzahlen/
     """
     STANDARD_TERM_YEARS = 25
     ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
@@ -177,7 +182,7 @@ def _simulate_payoff_years(
         excess_saved = max(0.0, extra_available - monthly_extra_max)
         accumulated_savings += excess_saved
 
-        # after 10 years, check for penalty-free full prepayment with notice
+        # after 10 years, check for full prepayment with notice ---> needs to implement benalty
         if month >= 120:
             excess_per_month = max(0.0, extra_available - monthly_extra_max)
             projected_lump = accumulated_savings + NOTICE_MONTHS_FOR_PREPAY * excess_per_month
