@@ -241,9 +241,5 @@ def estimate_mortgage_payoff_years(
     down_payment = cash_savings - upfront
     down_payment_ratio = down_payment / purchase_price
     annual_interest_rate = _interest_rate(down_payment_ratio)
-    payoff_years, _ = _simulate_payoff_years(
-        mortgage_amount,
-        annual_interest_rate,
-        monthly_savings,
-    )
+    payoff_years, _ = _simulate_payoff_years(mortgage_amount, annual_interest_rate, monthly_savings)
     return payoff_years
