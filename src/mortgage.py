@@ -262,7 +262,3 @@ def estimate_real_estate_value(purchase_price: float, purchase_year: int, curren
         .item()
     )
     return purchase_price * value_increase
-
-
-estimate = estimate_real_estate_value(100_000, 2000, 2024)
-print(f"{estimate:,}")
