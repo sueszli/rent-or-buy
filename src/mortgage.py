@@ -260,7 +260,7 @@ def estimate_real_estate_value(purchase_price: float, purchase_year: int, curren
         .select(pl.col("year"), pl.col("quarter"), pl.col("values"))
         .filter((pl.col("year") >= int(purchase_year)) & (pl.col("year") <= int(current_year)))
         # compute ratio
-        .select(pl.col("values").first() * pl.col("values").last() / pl.col("values").first())
+        .select(pl.col("values").last() / pl.col("values").first())
         .item()
     )
     # fmt: on
