@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import plotille
 import polars as pl
 from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scale_x_date, scale_y_continuous, theme, theme_minimal
@@ -10,7 +12,7 @@ from real_estate import estimate_mortgage_payoff_years, simulate_real_estate_por
 def plot_comparison(df: pl.DataFrame):
     last_rows = df.group_by("strategy").last()
 
-    (
+    p = (
         ggplot(df, aes(x="date", y="payout", color="strategy"))
         + geom_line(size=1)
         + geom_text(
@@ -33,13 +35,16 @@ def plot_comparison(df: pl.DataFrame):
         )
         + scale_y_continuous(labels=lambda label: [f"{x:,.0f}€" for x in label])
         + scale_x_date(expand=(0.1, 0.1))
-    ).show()
+    )
+
+    p.save(f"assets/comparison_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+    p.show()
 
 
 def plot_comparison_ascii(df: pl.DataFrame):
     fig = plotille.Figure()
-    fig.width = 100
-    fig.height = 40
+    fig.width = 80
+    fig.height = 30
 
     for (name,), data in df.group_by(["strategy"]):
         data = data.sort("date")
