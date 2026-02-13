@@ -1,3 +1,4 @@
+import plotille
 import polars as pl
 from plotnine import aes, element_text, geom_line, geom_text, ggplot, labs, scale_x_date, scale_y_continuous, theme, theme_minimal
 
@@ -35,6 +36,20 @@ def plot_comparison(df: pl.DataFrame):
     ).show()
 
 
+def plot_comparison_ascii(df: pl.DataFrame):
+    fig = plotille.Figure()
+    fig.width = 100
+    fig.height = 40
+
+    for (name,), data in df.group_by(["strategy"]):
+        data = data.sort("date")
+        x = data["date"].dt.year() + (data["date"].dt.month() - 1) / 12.0
+        y = data["payout"]
+        fig.plot(x, y, label=str(name))
+
+    print(fig.show(legend=True))
+
+
 def run_comparison():
     INITIAL_LUMP_SUM = 130_000
     PROPERTY_PRICE = 500_000
@@ -50,8 +65,8 @@ def run_comparison():
         product=Products.MSCI_WORLD,
     ).with_columns(pl.lit("Equity ETF").alias("strategy"))
     print("--- equity strategy:")
-    print(equity_df.head(1))
-    print(equity_df.tail(1))
+    print(equity_df.head(1).row(0))
+    print(equity_df.tail(1).row(0))
 
     real_estate_df = simulate_real_estate_portfolio(
         monthly_savings=INCOME,
@@ -61,11 +76,14 @@ def run_comparison():
         cash_savings=INITIAL_LUMP_SUM,
     ).with_columns(pl.lit("Real Estate").alias("strategy"))
     print("--- real estate strategy:")
-    print(real_estate_df.head(1))
-    print(real_estate_df.tail(1))
+    print(real_estate_df.head(1).row(0))
+    print(real_estate_df.tail(1).row(0))
 
-    plot_comparison(pl.concat([equity_df, real_estate_df]))
+    df = pl.concat([equity_df, real_estate_df])
+    return df
 
 
 if __name__ == "__main__":
-    run_comparison()
+    df = run_comparison()
+    plot_comparison_ascii(df)
+    plot_comparison(df)
