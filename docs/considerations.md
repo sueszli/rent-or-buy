@@ -1,4 +1,3 @@
-
 a mortgage is a credit used to leverage your real-estate investment:
 
 - ETF: Unleveraged (1:1). If market goes up 10%, you make 10k
@@ -20,7 +19,9 @@ renting:
 
 - portfolio returns are all you own
 
-other features:
+--
+
+TODO:
 
 - nominal vs. real: assume 2.54% inflation
 - add monthly maintenance cost for home
