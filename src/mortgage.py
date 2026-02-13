@@ -115,7 +115,7 @@ def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) 
     if annual_rate <= 1e-9:
         return principal / (years * 12)
     monthly_rate = annual_rate / 12.0
-    assert monthly_rate > 0, "monthly rate must be positive for this formula"
+    assert monthly_rate > 0
     num_payments = years * 12
     return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / ((1 + monthly_rate) ** num_payments - 1)
 
