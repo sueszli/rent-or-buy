@@ -113,9 +113,9 @@ class Products(Enum):
 
 def simulate_portfolio(
     monthly_savings: float,
-    years: int = 20,
+    years: int = 25,
     start_month: int = 1,
-    start_year: int = 2004,
+    start_year: int = 1989,
     product: Products = Products.MSCI_WORLD,
 ) -> pl.DataFrame:
     SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
@@ -215,4 +215,4 @@ def plot_portfolio(df: pl.DataFrame):
     ).show()
 
 
-# plot_portfolio(simulate_portfolio(monthly_savings=1000))
+# plot_portfolio(simulate_portfolio(monthly_savings=2000))
