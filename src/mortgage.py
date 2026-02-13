@@ -127,13 +127,11 @@ def _simulate_payoff_years(
     mortgage_amount: float,
     annual_interest_rate: float,
     monthly_savings: float,
-) -> tuple[float, float]:
+) -> float:
     """
     simulate month-by-month payoff considering
 
-    returns (years, total_interest_paid)
-
-    in austria you can pay a 1% penalty (HIKrG § 20) to exit a fixed-rate mortgage early
+    you can pay a 1% penalty (HIKrG § 20) to exit a fixed-rate mortgage early
 
     - https://www.infina.at/ratgeber/finanzierung/laufzeit-kredit/
     - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
@@ -214,7 +212,7 @@ def _simulate_payoff_years(
             accumulated_interest += tmp_interest + penalty_cost
             return (month + EARLY_EXIT_NOTICE_MONTHS) / 12.0, accumulated_interest
 
-    return month / 12.0, accumulated_interest
+    return month / 12.0
 
 
 def estimate_mortgage_payoff_years(
@@ -241,5 +239,5 @@ def estimate_mortgage_payoff_years(
     down_payment = cash_savings - upfront
     down_payment_ratio = down_payment / purchase_price
     annual_interest_rate = _interest_rate(down_payment_ratio)
-    payoff_years, _ = _simulate_payoff_years(mortgage_amount, annual_interest_rate, monthly_savings)
+    payoff_years = _simulate_payoff_years(mortgage_amount, annual_interest_rate, monthly_savings)
     return payoff_years
