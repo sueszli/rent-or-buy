@@ -1,6 +1,3 @@
-compare real vs. nominal returns
-
-- assume 2.54% inflation
 
 a mortgage is a credit used to leverage your real-estate investment:
 
@@ -11,3 +8,21 @@ timing matters:
 
 - etf: Dotcom crash or 2008 Financial Crisis
 - real estate: Prices in cities like Munich, Berlin, or Vienna doubled or tripled between 2010 and 2022
+
+---
+
+home:
+
+- home value (relative to real estate market)
+- incurring costs: mortgage, maintenance, taxes, insurance, utilities, opportunity cost of down payment, depreciation, renovation cost, property tax, etc.
+
+renting:
+
+- portfolio returns are all you own
+
+other features:
+
+- nominal vs. real: assume 2.54% inflation
+- add monthly maintenance cost for home
+- add rent inflation in vienna
+- add home price inflation in vienna
