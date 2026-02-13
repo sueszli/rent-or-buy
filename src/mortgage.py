@@ -163,7 +163,7 @@ def _simulate_payoff_years(
 
         # pay regular monthly payment
         interest = debt * annual_interest_rate / 12.0
-        assert interest >= 0, f"interest {interest} must be positive (debt={debt}, rate={annual_interest_rate / 12.0})"
+        assert interest >= 0
         principal = max(monthly_mortgage_payment - interest, 0.0)
         debt -= principal
         if debt <= 0:
