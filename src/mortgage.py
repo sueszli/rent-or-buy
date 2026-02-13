@@ -137,12 +137,11 @@ def _simulate_payoff_years(
     - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
     - https://www.arbeiterkammer.at/beratung/konsument/Geld/Kredite/Vorzeitige-Rueckzahlung-von-Krediten.html
     - https://www.infina.at/ratgeber/kredit-vorzeitig-zurueckzahlen/
-    - https://www.ris.bka.gv.at/NormDokument.wxe?Abfrage=Bundesnormen&Gesetzesnummer=20009367&Paragraf=20
     """
     STANDARD_TERM_YEARS = 25
-    ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY = 10000.0
+    MAX_MONTHLY_PAYMENT = 10_000.0 / 12  # smoothed
 
-    EARLY_EXIT_NOTICE_MONTHS = 6
+    EARLY_EXIT_NOTICE_MONTHS = 6  # -----> is this even true????
     EARLY_EXIT_PENALTY_RATE = 0.01
 
     # paid off immediately
@@ -152,9 +151,7 @@ def _simulate_payoff_years(
     monthly_mortgage_payment = _monthly_mortgage_payment(mortgage_amount, annual_interest_rate, STANDARD_TERM_YEARS)
     monthly_savings -= _monthly_ownership_costs()
     assert monthly_savings >= monthly_mortgage_payment, "insufficient monthly savings"
-
     monthly_excess = monthly_savings - monthly_mortgage_payment
-    monthly_spending_limit = ANNUAL_EXTRA_LIMIT_WITHOUT_PENALTY / 12.0  # smoothed
 
     debt = mortgage_amount
     accumulated_savings = 0.0  # what we save up for a potential early exit
@@ -176,20 +173,20 @@ def _simulate_payoff_years(
             break
 
         # pay whatever we still have available (capped)
-        extra_applied = min(monthly_excess, monthly_spending_limit, debt)
+        extra_applied = min(monthly_excess, MAX_MONTHLY_PAYMENT, debt)
         debt -= extra_applied
         if debt <= 0:
             break
 
         # save the rest up for a potential early exit
-        excess_saved = max(0.0, monthly_excess - monthly_spending_limit)
+        excess_saved = max(0.0, monthly_excess - MAX_MONTHLY_PAYMENT)
         accumulated_savings += excess_saved
 
         #
         # should we exit early?
         #
 
-        excess_per_month = max(0.0, monthly_excess - monthly_spending_limit)
+        excess_per_month = max(0.0, monthly_excess - MAX_MONTHLY_PAYMENT)
         projected_lump = accumulated_savings + EARLY_EXIT_NOTICE_MONTHS * excess_per_month
 
         # simulate loan during notice period with continued payments
@@ -202,7 +199,7 @@ def _simulate_payoff_years(
             tmp_interest += temp_interest_month
             temp_principal = monthly_mortgage_payment - temp_interest_month
             temp_principal = max(temp_principal, 0.0)
-            temp_extra = min(monthly_spending_limit, tmp_debt - temp_principal)
+            temp_extra = min(MAX_MONTHLY_PAYMENT, tmp_debt - temp_principal)
             tmp_debt -= temp_principal + temp_extra
 
         penalty_cost = tmp_debt * EARLY_EXIT_PENALTY_RATE
