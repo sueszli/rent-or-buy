@@ -50,6 +50,9 @@ def run_comparison():
         product=Products.MSCI_WORLD,
     )
     equity_df = equity_df.with_columns(pl.lit("Equity ETF").alias("strategy"))
+    print("\nequity strategy:")
+    print(equity_df.head(1))
+    print(equity_df.tail(1))
 
     real_estate_df = simulate_real_estate_portfolio(
         monthly_savings=INCOME_PERCENTILE.value,
@@ -59,6 +62,9 @@ def run_comparison():
         cash_savings=INITIAL_LUMP_SUM,
     )
     real_estate_df = real_estate_df.with_columns(pl.lit("Real Estate").alias("strategy"))
+    print("\nreal estate strategy:")
+    print(real_estate_df.head(1))
+    print(real_estate_df.tail(1))
 
     combined_df = pl.concat([equity_df, real_estate_df])
 
