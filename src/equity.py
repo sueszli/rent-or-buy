@@ -125,7 +125,6 @@ class Products(Enum):
 def simulate_equity_portfolio(
     monthly_savings: float,
     years: int,
-    start_month: int,
     start_year: int,
     product: Products = Products.MSCI_WORLD,
 ) -> pl.DataFrame:
@@ -141,12 +140,12 @@ def simulate_equity_portfolio(
     _prices, _annual_tax = product.value
 
     months = years * 12
-    prices = _prices(months, start_month, start_year)
+    prices = _prices(months, 1, start_year)
 
     total_shares = 0.0
     safe_from_tax = 0.0
 
-    start_date = datetime.date(start_year, start_month, 1)
+    start_date = datetime.date(start_year, 1, 1)
     dates = [start_date + relativedelta(months=i) for i in range(len(prices))]
 
     payout_history = []

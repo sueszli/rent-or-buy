@@ -1,6 +1,9 @@
+import datetime
+from functools import cache
 from pathlib import Path
 
 import polars as pl
+from dateutil.relativedelta import relativedelta
 
 
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
@@ -215,8 +218,8 @@ def _simulate_payoff_years(
 
 def estimate_mortgage_payoff_years(
     monthly_savings: float,
-    cash_savings: float = 200_000.0,
-    purchase_price: float = 500_000.0,
+    cash_savings: float,
+    purchase_price: float,
 ) -> float:
     """
     estimate how many years it takes to pay off a mortgage
@@ -241,6 +244,7 @@ def estimate_mortgage_payoff_years(
     return payoff_years
 
 
+@cache
 def _estimate_real_estate_value(purchase_price: float, purchase_year: int, current_year: int) -> float:
     """
     estimate the inflation-adjusted value
@@ -267,7 +271,28 @@ def _estimate_real_estate_value(purchase_price: float, purchase_year: int, curre
 def simulate_real_estate_portfolio(
     monthly_savings: float,
     years: int,
-    start_month: int,
     start_year: int,
+    purchase_price: float,
+    cash_savings: float,
 ) -> pl.DataFrame:
-    pass
+    """
+    simulate the net worth (liquidation value) of a real estate investment over time
+    """
+    payoff_years = estimate_mortgage_payoff_years(monthly_savings, cash_savings, purchase_price)
+
+    dates = []
+    payout_history = []
+    start_date = datetime.date(start_year, 1, 1)
+
+    for i in range(years * 12):
+        current_date = start_date + relativedelta(months=i)
+        dates.append(current_date)
+
+        # in debt until mortgage is paid off
+        if (i / 12.0) < payoff_years:
+            current_year_value = 0.0
+        else:
+            current_year_value = _estimate_real_estate_value(purchase_price, start_year, current_date.year)
+        payout_history.append(current_year_value)
+
+    return pl.DataFrame({"date": dates, "payout": payout_history})
