@@ -5,6 +5,8 @@ from pathlib import Path
 import polars as pl
 from dateutil.relativedelta import relativedelta
 
+from equity import simulate_equity_portfolio
+
 
 def _upfront_costs(purchase_price: float, mortgage_amount: float) -> float:
     """
@@ -71,6 +73,7 @@ def _interest_rate(down_payment_ratio: float) -> float:
     - https://www.oenb.at/en/Statistics/Charts/Chart-4.html
     - https://www.fma.gv.at/en/fma-issues-regulation-for-sustainable-lending-standards-for-residential-real-estate-financing-kim-v/
     """
+    assert 0 <= down_payment_ratio <= 1.0
 
     BASE_INTEREST_RATE = 0.034
 
@@ -146,6 +149,10 @@ def _simulate_payoff_years(
     - https://www.arbeiterkammer.at/beratung/konsument/Geld/Kredite/Vorzeitige-Rueckzahlung-von-Krediten.html
     - https://www.infina.at/ratgeber/kredit-vorzeitig-zurueckzahlen/
     """
+    assert mortgage_amount >= 0
+    assert 0 <= annual_interest_rate <= 1.0
+    assert monthly_savings > 0
+
     STANDARD_TERM_YEARS = 25
     MAX_MONTHLY_PAYMENT = 10_000.0 / 12  # smoothed
 
@@ -278,6 +285,12 @@ def simulate_real_estate_portfolio(
     """
     simulate the net worth (liquidation value) of a real estate investment over time
     """
+    assert monthly_savings > 0
+    assert years > 0
+    assert 1900 <= start_year <= 2100
+    assert purchase_price > 0
+    assert cash_savings >= 0
+
     payoff_years = estimate_mortgage_payoff_years(monthly_savings, cash_savings, purchase_price)
 
     dates = []
@@ -286,7 +299,31 @@ def simulate_real_estate_portfolio(
 
     current_year_value = 0.0
 
-    for i in range(years * 12):
+    total_months = years * 12
+
+    #
+    # invest in equity after mortgage is paid off
+    #
+
+    equity_payouts = [0.0] * total_months
+    payoff_months = int(payoff_years * 12 + 0.0001)
+
+    equity_months = total_months - payoff_months
+    equity_monthly_savings = monthly_savings - _monthly_ownership_costs()
+
+    if equity_months > 0 and equity_monthly_savings > 0:
+        start_equity_date = start_date + relativedelta(months=payoff_months)
+
+        equity_df = simulate_equity_portfolio(monthly_savings=equity_monthly_savings, years=years, start_year=start_equity_date.year, start_month=start_equity_date.month, months=equity_months, cash_savings=0.0)  # not used for duration if months is set
+        equity_values = equity_df["payout"].to_list()
+        assert len(equity_values) == equity_months
+        equity_payouts[payoff_months:] = equity_values
+
+    #
+    # pay off mortgage
+    #
+
+    for i in range(total_months):
         current_date = start_date + relativedelta(months=i)
         dates.append(current_date)
 
@@ -295,6 +332,8 @@ def simulate_real_estate_portfolio(
             current_year_value = 0.0
         else:
             current_year_value = _estimate_real_estate_value(purchase_price, start_year, current_date.year)
-        payout_history.append(current_year_value)
+
+        total_value = current_year_value + equity_payouts[i]
+        payout_history.append(total_value)
 
     return pl.DataFrame({"date": dates, "payout": payout_history})

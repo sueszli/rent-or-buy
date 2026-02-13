@@ -126,27 +126,35 @@ def simulate_equity_portfolio(
     monthly_savings: float,
     years: int,
     start_year: int,
+    start_month: int = 1,
+    months: int | None = None,
     cash_savings: float = 0.0,
     product: Products = Products.MSCI_WORLD,
 ) -> pl.DataFrame:
+    assert monthly_savings >= 0
+    assert years > 0
+    assert 1 <= start_year <= 2025
+    assert 1 <= start_month <= 12
+    assert months is None or months > 0
+
     SPREAD_HALF = 0.0012 / 2  # 0.06% spread cost each way
     KEST = 0.275  # kapital ertragssteuer
 
-    def _buy_price(price: float) -> float:
-        return price * (1 + SPREAD_HALF)
-
-    def _sell_price(price: float) -> float:
-        return price * (1 - SPREAD_HALF)
+    buy_factor = 1.0 + SPREAD_HALF
+    sell_factor = 1.0 - SPREAD_HALF
 
     _prices, _annual_tax = product.value
 
-    months = years * 12
-    prices = _prices(months, 1, start_year)
+    if months is None:
+        months = years * 12
+
+    assert months is not None
+    prices = _prices(months, start_month, start_year)
 
     total_shares = 0.0
     safe_from_tax = 0.0
 
-    start_date = datetime.date(start_year, 1, 1)
+    start_date = datetime.date(start_year, start_month, 1)
     dates = [start_date + relativedelta(months=i) for i in range(len(prices))]
 
     payout_history = []
@@ -161,7 +169,7 @@ def simulate_equity_portfolio(
 
         # buy shares
         assert current_investable > 0
-        total_shares += current_investable / _buy_price(price)
+        total_shares += current_investable / (price * buy_factor)
         safe_from_tax += current_investable
 
         # annual tax event in january
@@ -175,12 +183,12 @@ def simulate_equity_portfolio(
             safe_from_tax += national_tax_refund
 
             if tax_due > 0 and total_shares > 0:
-                shares_to_sell = tax_due / _sell_price(price)  # don't deduct KESt for simplicity
+                shares_to_sell = tax_due / (price * sell_factor)  # don't deduct KESt for simplicity
                 safe_from_tax *= 1.0 - (shares_to_sell / total_shares)
                 total_shares -= shares_to_sell
 
         # how much if we would liquidate today?
-        gross_value = total_shares * _sell_price(price)
+        gross_value = total_shares * (price * sell_factor)
         taxable_value = gross_value - safe_from_tax
         exit_tax = taxable_value * KEST if taxable_value > 0 else 0.0
 
