@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 
 import polars as pl
@@ -242,28 +241,31 @@ def estimate_mortgage_payoff_years(
     return payoff_years
 
 
-def estimate_real_estate_value(purchase_price: float, purchase_year: int) -> float:
+def estimate_real_estate_value(purchase_price: float, purchase_year: int, current_year: int) -> float:
     """
     estimate the inflation-adjusted value
     """
-    assert purchase_price > 0
-    assert purchase_year > 0
+    assert 0 < purchase_price
+    assert 0 < purchase_year < 2026
 
-    # preprocess
-    # fmt: off
     datapath = Path(__file__).parent.parent / "data" / "rppi.csv"
-    df = (
+
+    # fmt: off
+    value_increase = (
         pl.read_csv(datapath)
-        .filter(pl.col("period") == "quarter") # higher granularity
-        .filter(pl.col("indicator").str.contains("Real estate price index, Vienna, apartments total, 2000=100")) # track price changes
+        # track price changes
+        .filter(pl.col("period") == "quarter")
+        .filter(pl.col("indicator") == "Real estate price index, Vienna, apartments total, 2000=100")
+        # filter year
         .select(pl.col("year"), pl.col("quarter"), pl.col("values"))
+        .filter((pl.col("year") >= int(purchase_year)) & (pl.col("year") <= int(current_year)))
+        # compute ratio
+        .select(pl.col("values").first() * pl.col("values").last() / pl.col("values").first())
+        .item()
     )
     # fmt: on
-
-    _ = datetime.now().year
-
-    print(df)
+    return purchase_price * value_increase
 
 
-estimate = estimate_real_estate_value(500_000.0, 2000)
-# print(estimate)
+estimate = estimate_real_estate_value(100_000, 2000, 2024)
+print(f"{estimate:,}")
