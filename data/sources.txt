@@ -1,0 +1,4 @@
+data sources:
+
+- equity: https://curvo.eu/backtest/en
+- real estate: https://www.oenb.at/isawebstat/stabfrage/createReport?lang=EN&original=false&report=6.6
