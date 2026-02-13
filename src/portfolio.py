@@ -13,6 +13,7 @@ def _prices_vanguard(months: int, start_month: int, start_year: int) -> list[flo
     assert 1 * 12 <= months <= 20 * 12, f"insufficient data for {months} months"
     assert 1 <= start_month <= 12, f"invalid start month {start_month}"
     assert 2003 <= start_year <= 2024, f"invalid start year {start_year}"
+
     df = pl.read_csv(datapath).with_columns(pl.col("Date").str.to_date("%m/%Y")).select(pl.col("Date"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
     start_date = datetime.date(start_year, start_month, 1)
     prices_df = df.filter(pl.col("Date") >= start_date).head(months)
@@ -53,6 +54,7 @@ def _prices_msci(months: int, start_month: int, start_year: int) -> list[float]:
     assert 1 * 12 <= months <= 38 * 12, f"insufficient data for {months} months"
     assert 1 <= start_month <= 12, f"invalid start month {start_month}"
     assert 1987 <= start_year <= 2025, f"invalid start year {start_year}"
+
     df = pl.read_csv(datapath).with_columns(pl.col("Date").str.to_date("%m/%Y")).select(pl.col("Date"), pl.col("^iShares.*$").alias("price")).sort("Date")
     start_date = datetime.date(start_year, start_month, 1)
     prices_df = df.filter(pl.col("Date") >= start_date).head(months)
