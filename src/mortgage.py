@@ -61,6 +61,7 @@ def _interest_rate(down_payment_ratio: float) -> float:
 
     - https://wien.arbeiterkammer.at/beratung/konsumentenschutz/geld/kredite/Hypothekarkredite_202501.pdf
     - https://www.oenb.at/en/Statistics/Charts/Chart-4.html
+    - https://www.fma.gv.at/en/fma-issues-regulation-for-sustainable-lending-standards-for-residential-real-estate-financing-kim-v/
     """
 
     BASE_INTEREST_RATE = 0.034
@@ -103,8 +104,6 @@ def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) 
 
     formula: M = P * [r(1+r)^n] / [(1+r)^n - 1]
     where M = monthly payment, P = principal, r = monthly rate, n = number of payments
-
-    - https://www.fma.gv.at/en/fma-issues-regulation-for-sustainable-lending-standards-for-residential-real-estate-financing-kim-v/
     """
     assert 0 < principal
     assert 0 <= annual_rate <= 1.0
