@@ -249,13 +249,24 @@ def estimate_real_estate_value(purchase_price: float, purchase_year: int) -> flo
     assert purchase_price > 0
     assert purchase_year > 0
 
+    # preprocess
+    datapath = Path(__file__).parent.parent / "data" / "rppi.csv"
+    df = (
+        pl.read_csv(datapath)
+        .filter(pl.col("period") == "quarter") # higher granularity
+        .filter(pl.col("indicator").str.contains("Real estate price index, Vienna, apartments total, 2000=100")) # track price changes
+        .select(pl.col("year"), pl.col("quarter"), pl.col("values"))
+    )
+
     _ = datetime.now().year
 
-    datapath = Path(__file__).parent.parent / "data" / "rppi.csv"
-    # df = pl.read_csv(datapath).with_columns(pl.col("Date").str.to_date("%m/%Y")).select(pl.col("Date"), pl.col("^Vanguard.*$").alias("price")).sort("Date")
-    df = pl.read_csv(datapath)
     print(df)
+
+    # print each group seperately
+    # for group in df:
+    #     print(group[0])
+
 
 
 estimate = estimate_real_estate_value(500_000.0, 2000)
-print(estimate)
+# print(estimate)
