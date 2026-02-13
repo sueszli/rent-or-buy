@@ -209,7 +209,6 @@ def estimate_mortgage_payoff_years(
     """
     estimate how many years it takes to pay off a mortgage
     """
-
     RENT_PER_M2 = 21.0  # based on 2025 data, approx €21 per m² including costs
     TYPICAL_PRICE_FOR_COSTS = 500000.0
     TYPICAL_APARTMENT_SIZE_M2 = 80.0
