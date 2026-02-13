@@ -77,8 +77,6 @@ def _interest_rate(down_payment_ratio: float) -> float:
         return BASE_INTEREST_RATE + 0.005  # common penalty (estimate)
 
 
-
-
 def _monthly_ownership_costs() -> float:
     """
     property maintenance, regardless of mortgage
@@ -93,10 +91,10 @@ def _monthly_ownership_costs() -> float:
     typical_apartment_size_m2 = 80.0
 
     bk_rate = 2.60  # operating costs (betriebskosten)
-    reserve_rate = 1.12 # maintenance reserve (reparaturrücklage)
-    energy_rate = 2.50 # energy costs (heizkosten, warmwasser, strom)
-    insurance_rate = 0.30 # insurance costs (hausversicherung, haftpflicht, etc.)
-    energy_rate = 0.20 # tax costs (grundsteuer, etc.)
+    reserve_rate = 1.12  # maintenance reserve (reparaturrücklage)
+    energy_rate = 2.50  # energy costs (heizkosten, warmwasser, strom)
+    insurance_rate = 0.30  # insurance costs (hausversicherung, haftpflicht, etc.)
+    energy_rate = 0.20  # tax costs (grundsteuer, etc.)
     total_cost_per_m2 = bk_rate + reserve_rate + energy_rate + insurance_rate
     return total_cost_per_m2 * typical_apartment_size_m2
 
