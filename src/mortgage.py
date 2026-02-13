@@ -109,12 +109,18 @@ def _monthly_mortgage_payment(principal: float, annual_rate: float, years: int) 
     assert 0 <= annual_rate <= 1.0
     assert 0 < years <= 35, "mortgage over 35 years is not permitted under KIM-VO regulation"
 
+    num_payments = years * 12
+
+    # handle 0% interest edge case
     if annual_rate <= 1e-9:
-        return principal / (years * 12)
+        return principal / num_payments
+
     monthly_rate = annual_rate / 12.0
     assert monthly_rate > 0
-    num_payments = years * 12
-    return principal * (monthly_rate * (1 + monthly_rate) ** num_payments) / ((1 + monthly_rate) ** num_payments - 1)
+
+    # standard annuity formula
+    factor = (1 + monthly_rate) ** num_payments
+    return principal * (monthly_rate * factor) / (factor - 1)
 
 
 def _simulate_payoff_years(
